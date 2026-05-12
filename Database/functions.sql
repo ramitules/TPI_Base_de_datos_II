@@ -1,0 +1,12 @@
+USE TPI_Base_de_datos_II
+GO
+
+CREATE FUNCTION fn_ejemplo ()
+RETURNS INT
+AS
+BEGIN
+    RETURN 1
+END;
+
+GO
+
