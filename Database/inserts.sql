@@ -1,3 +1,4 @@
+
 CREATE DATABASE GestionGimnasio
 Collate Latin1_General_CI_AI
 GO
@@ -75,7 +76,7 @@ CREATE TABLE Suscripciones (  -- Tabla puente (con datos extra) que relaciona a 
 GO
 
 
-CREATE TABLE RutinaEjercicios (  -- Asigna los ejercicios especÌficos a una plantilla de rutina
+CREATE TABLE RutinaEjercicios (  -- Asigna los ejercicios especÔøΩficos a una plantilla de rutina
 	IdRutinaEjercicio 		INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	IdEjercicio 			INTEGER NOT NULL,
 	ObjetivoSeries 			SMALLINT DEFAULT 1,
@@ -111,6 +112,7 @@ GO
 
 
 
+
 --DATOS PARA CARGAR EN LAS TABLAS--
 
 INSERT INTO GruposMusculares (Nombre)
@@ -119,7 +121,7 @@ VALUES
 ('Espalda / Dorsales'),
 ('Piernas / Tren Inferior'),
 ('Hombros / Deltoides'),
-('Brazos (BÌceps/TrÌceps)'),
+('Brazos (B√≠ceps/Tr√≠ceps)'),
 ('Core / Abdominales');
 
 INSERT INTO SuscripcionesEstados (Nombre)
@@ -137,7 +139,7 @@ VALUES
 INSERT INTO Planes (Nombre, PrecioMensual, DuracionDias)
 VALUES 
 ('Pase Diario', 2500.00, 1),
-('Plan Mensual Est·ndar', 18000.00, 30),
+('Plan Mensual Est√°ndar', 18000.00, 30),
 ('Plan Mensual Pase Libre', 22000.00, 30),
 ('Trimestre Promocional', 15000.00, 90),
 ('Pase Libre Semestral', 13500.00, 180);
@@ -145,25 +147,26 @@ VALUES
 INSERT INTO Usuarios (Nombre, Apellido, Email, FechaNacimiento, PesoCorporalKG, IdRol, FechaIngreso)
 VALUES 
 ('Alejandro', 'Rossi', 'alejandro.rossi@email.com', '1988-04-12', 82.50, 1, '2025-01-10 09:00:00'),
-('Mariana', 'Fern·ndez', 'mariana.f@email.com', '1992-09-25', 64.20, 2, '2025-02-15 14:30:00'),
+('Mariana', 'Fern√°ndez', 'mariana.f@email.com', '1992-09-25', 64.20, 2, '2025-02-15 14:30:00'),
 ('Carlos', 'Mendoza', 'carlos.mendoza@email.com', '1985-11-05', 91.80, 2, '2025-03-01 08:15:00'),
-('SofÌa', 'BenÌtez', 'sofia.b@email.com', '1998-07-19', 58.70, 3, '2026-01-05 10:00:00'),
-('Lucas', 'GimÈnez', 'lucas.gimenez@email.com', '1994-02-28', 78.40, 3, '2026-01-12 18:20:00'),
+('Sof√≠a', 'Ben√≠tez', 'sofia.b@email.com', '1998-07-19', 58.70, 3, '2026-01-05 10:00:00'),
+('Lucas', 'Gim√©nez', 'lucas.gimenez@email.com', '1994-02-28', 78.40, 3, '2026-01-12 18:20:00'),
 ('Florencia', 'Herrera', 'flor.herrera@email.com', '1991-05-14', 61.10, 3, '2026-01-20 11:45:00'),
 ('Diego', 'Romero', 'diego.romero@email.com', '1990-12-01', 85.30, 3, '2026-02-02 16:00:00'),
 ('Camila', 'Maidana', 'camila.m@email.com', '2000-03-22', 55.00, 3, '2026-02-10 09:30:00'),
-('MartÌn', 'Silva', 'martin.silva@email.com', '1987-08-30', 95.20, 3, '2026-02-18 20:15:00'),
-('Valentina', 'RÌos', 'vale.rios@email.com', '1996-10-10', 67.80, 3, '2026-03-01 07:00:00'),
+('Mart√≠n', 'Silva', 'martin.silva@email.com', '1987-08-30', 95.20, 3, '2026-02-18 20:15:00'),
+('Valentina', 'R√≠os', 'vale.rios@email.com', '1996-10-10', 67.80, 3, '2026-03-01 07:00:00'),
 ('Facundo', 'Castro', 'facu.castro@email.com', '1993-01-15', 73.90, 3, '2026-03-05 15:30:00'),
-('Agustina', '¡lvarez', 'agus.alvarez@email.com', '1995-06-08', 62.40, 3, '2026-03-12 19:00:00'),
+('Agustina', '√Ålvarez', 'agus.alvarez@email.com', '1995-06-08', 62.40, 3, '2026-03-12 19:00:00'),
 ('Gonzalo', 'Pereyra', 'gonza.p@email.com', '1989-11-23', 88.10, 3, '2026-03-20 08:00:00'),
 ('Natalia', 'Torres', 'natalia.torres@email.com', '1997-04-04', 59.50, 3, '2026-04-02 12:15:00'),
-('JoaquÌn', 'DomÌnguez', 'joaco.d@email.com', '1992-02-17', 81.00, 3, '2026-04-10 17:45:00'),
+('Joaqu√≠n', 'Dom√≠nguez', 'joaco.d@email.com', '1992-02-17', 81.00, 3, '2026-04-10 17:45:00'),
 ('Elena', 'Acosta', 'elena.acosta@email.com', '1986-07-29', 70.30, 3, '2026-04-18 10:30:00'),
 ('Bautista', 'Morales', 'bauti.morales@email.com', '2001-09-05', 76.60, 3, '2026-04-25 16:20:00'),
 ('Victoria', 'Ortega', 'viqui.ortega@email.com', '1994-12-12', 63.80, 3, '2026-05-02 09:00:00'),
-('Juan Pablo', 'LÛpez', 'juanpi.lopez@email.com', '1991-03-27', 89.40, 3, '2026-05-10 14:00:00'),
-('Micaela', 'N˙Òez', 'mica.nunez@email.com', '1999-05-18', 57.20, 3, '2026-05-15 11:10:00');
+('Juan Pablo', 'L√≥pez', 'juanpi.lopez@email.com', '1991-03-27', 89.40, 3, '2026-05-10 14:00:00'),
+('Micaela', 'N√∫√±ez', 'mica.nunez@email.com', '1999-05-18', 57.20, 3, '2026-05-15 11:10:00');
+
 
 INSERT INTO Ejercicios (Nombre, IdGrupoMuscular)
 VALUES 
@@ -173,23 +176,23 @@ VALUES
 
 ('Dominadas Pronas', 2),
 ('Remo con Barra', 2),
-('JalÛn al Pecho en Polea', 2),
+('Jal√≥n al Pecho en Polea', 2),
 
 ('Sentadilla Libre con Barra', 3),
 ('Prensa de Piernas 45 Grados', 3),
-('SillÛn de Extensiones de Cu·driceps', 3),
+('Sill√≥n de Extensiones de Cu√°driceps', 3),
 ('Peso Muerto Rumano con Mancuernas', 3),
 
 ('Press Militar con Barra', 4),
 ('Vuelos Laterales con Mancuernas', 4),
-('P·jaros en Polea (Deltoides Posterior)', 4),
+('P√°jaros en Polea (Deltoides Posterior)', 4),
 
-('Curl de BÌceps con Barra W', 5),
-('Curl de BÌceps en Banco Scott', 5),
-('Extensiones de TrÌceps en Polea Alta', 5),
-('Fondos en Paralelas para TrÌceps', 5),
+('Curl de B√≠ceps con Barra W', 5),
+('Curl de B√≠ceps en Banco Scott', 5),
+('Extensiones de Tr√≠ceps en Polea Alta', 5),
+('Fondos en Paralelas para Tr√≠ceps', 5),
 
-('Plancha Abdominal IsomÈtrica', 6);
+('Plancha Abdominal Isom√©trica', 6);
 
 INSERT INTO Rutinas (Nombre, IdUsuario, FechaCreacion)
 VALUES 
@@ -199,11 +202,11 @@ VALUES
 ('Rutina de Fuerza (5x5)', NULL, '2025-03-05 09:15:00'),
 
 -- Rutinas personalizadas (IDs del script de Usuarios)
-('Hipertrofia Piernas - SofÌa', 4, '2026-01-06 18:00:00'),
+('Hipertrofia Piernas - Sof√≠a', 4, '2026-01-06 18:00:00'),
 ('Acondicionamiento General - Lucas', 5, '2026-01-13 19:45:00'),
-('DefiniciÛn / Quema CalÛrica - Florencia', 6, '2026-01-22 15:30:00'),
-('Fuerza M·xima - Diego', 7, '2026-02-03 20:00:00'),
-('Rutina Adaptada - MartÌn', 9, '2026-02-19 10:20:00');
+('Definici√≥n / Quema Cal√≥rica - Florencia', 6, '2026-01-22 15:30:00'),
+('Fuerza M√°xima - Diego', 7, '2026-02-03 20:00:00'),
+('Rutina Adaptada - Mart√≠n', 9, '2026-02-19 10:20:00');
 
 INSERT INTO Suscripciones (IdUsuario, IdPlan, IdSuscripcionEstado, FechaInicio, FechaVencimiento)
 VALUES 
