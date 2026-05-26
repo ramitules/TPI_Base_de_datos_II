@@ -6,19 +6,19 @@ USE GestionGimnasio;
 GO
 
 CREATE TABLE SuscripcionesEstados (  -- Activa, vencida, etc.
-	ID 		TINYINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	Nombre 	NVARCHAR(50) NOT NULL
+	IdSuscripcionEstado  TINYINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	Nombre 	             NVARCHAR(50) NOT NULL
 )
 GO
 
 CREATE TABLE Roles (  -- Entrenador, Administrativo, etc.
-	ID 	TINYINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	Rol NVARCHAR(50) NOT NULL
+	IdRol 	TINYINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	Rol     NVARCHAR(50) NOT NULL
 );
 GO
 
 CREATE TABLE Planes (  -- Los tipos de suscripcion que ofrece el gimnasio
-	ID 				SMALLINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	IdPlan 			SMALLINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	Nombre 			NVARCHAR(150) NOT NULL UNIQUE,
 	PrecioMensual 	DECIMAL(8,2) NOT NULL DEFAULT 0,
 	DuracionDias 	SMALLINT DEFAULT 0
@@ -26,85 +26,86 @@ CREATE TABLE Planes (  -- Los tipos de suscripcion que ofrece el gimnasio
 GO
 
 CREATE TABLE GruposMusculares (  -- Pecho, biceps, etc.
-	ID 		TINYINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	Nombre 	NVARCHAR(100) NOT NULL
+	IdGrupoMuscular TINYINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	Nombre 	        NVARCHAR(100) NOT NULL
 )
 GO
 
 CREATE TABLE Usuarios (  -- Almacena tanto a los clientes como al staff (entrenadores, administradores)
-	ID 					INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	NombreCompleto 		NVARCHAR(155) NOT NULL,
+	IdUsuario 			INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	Nombre 				NVARCHAR(155) NOT NULL,
+	Apellido	 		NVARCHAR(155) NOT NULL,
 	Email 				NVARCHAR(150) NOT NULL,
 	FechaNacimiento 	DATE,
 	PesoCorporalKG 		DECIMAL(5,2) NOT NULL DEFAULT 0,
 	IdRol 				TINYINT NOT NULL,
 	FechaIngreso 		DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	FOREIGN KEY(IdRol) REFERENCES Roles(ID)
+	FOREIGN KEY(IdRol) REFERENCES Roles(IdRol)
 )
 GO
 
 CREATE TABLE Ejercicios (  -- Un catalogo estandarizado de movimientos
-	ID 				INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	IdEjercicio 	INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	Nombre 			NVARCHAR(200) NOT NULL,
 	IdGrupoMuscular	TINYINT,
-	FOREIGN KEY(IdGrupoMuscular) REFERENCES GruposMusculares(ID)
+	FOREIGN KEY(IdGrupoMuscular) REFERENCES GruposMusculares(IdGrupoMuscular)
 )
 GO
 
 CREATE TABLE Rutinas (  -- Plantillas de entrenamiento que un entrenador puede asignar o que el usuario arma (Ej: Empuje/Tiron/Piernas)
-	ID 				INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	IdRutina 		INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	Nombre 			NVARCHAR(150),
 	IdUsuario 		INTEGER,
 	FechaCreacion 	DATETIME,
-	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(ID)
+	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(IdUsuario)
 )
 GO
 
 CREATE TABLE Suscripciones (  -- Tabla puente (con datos extra) que relaciona a los usuarios con los planes a lo largo del tiempo
-	ID 					INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	IdSuscripcion 		INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	IdUsuario 			INTEGER NOT NULL,
 	IdPlan 				SMALLINT NOT NULL,
-	IdEstado 			TINYINT NOT NULL,
+	IdSuscripcionEstado TINYINT NOT NULL,
 	FechaInicio			DATE NOT NULL,
 	FechaVencimiento 	DATE NOT NULL,
-	FOREIGN KEY(IdEstado) REFERENCES SuscripcionesEstados(ID),
-	FOREIGN KEY(IdPlan) REFERENCES Planes(ID),
-	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(ID)
+	FOREIGN KEY(IdSuscripcionEstado) REFERENCES SuscripcionesEstados(IdSuscripcionEstado),
+	FOREIGN KEY(IdPlan) REFERENCES Planes(IdPlan),
+	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(IdUsuario)
 )
 GO
 
 
 CREATE TABLE RutinaEjercicios (  -- Asigna los ejercicios específicos a una plantilla de rutina
-	ID 						INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	IdRutinaEjercicio 		INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	IdEjercicio 			INTEGER NOT NULL,
 	ObjetivoSeries 			SMALLINT DEFAULT 1,
 	ObjetivoRepeticiones 	SMALLINT DEFAULT 1,
 	OrdenEjercicio 			TINYINT DEFAULT 1,
-	FOREIGN KEY(IdEjercicio) REFERENCES Ejercicios(ID)
+	FOREIGN KEY(IdEjercicio) REFERENCES Ejercicios(IdEjercicio)
 )
 GO
 
 CREATE TABLE SesionesEntrenamiento (  -- Registra el momento exacto en que un usuario pisa el gimnasio y entrena
-	ID 				INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	IdUsuario 		INTEGER NOT NULL,
-	IdRutina 		INTEGER,
-	FechaHoraInicio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	FechaHoraFin 	DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(ID),
-	FOREIGN KEY(IdRutina) REFERENCES Rutinas(ID)
+	IdSesionEntrenamiento INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	IdUsuario 		      INTEGER NOT NULL,
+	IdRutina 		      INTEGER,
+	FechaHoraInicio       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	FechaHoraFin 	      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(IdUsuario),
+	FOREIGN KEY(IdRutina) REFERENCES Rutinas(IdRutina)
 )
 GO
 
 CREATE TABLE SeriesCompletadas (  -- Guarda cada serie efectiva que hace el usuario. Ideal analisis
-	ID 						INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	IdSesion 				INTEGER NOT NULL,
+	IdSerieCompletada 		INTEGER NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	IdSesionEntrenamiento 	INTEGER NOT NULL,
 	IdEjercicio 			INTEGER NOT NULL,
 	PesoLevantadoKG 		SMALLINT NOT NULL DEFAULT 0,
 	RepeticionesLogradas 	SMALLINT NOT NULL DEFAULT 0,
 	RIR 					TINYINT,
 	EsRecordPersonal 		BIT NOT NULL DEFAULT 0,
-	FOREIGN KEY(IdSesion) REFERENCES SesionesEntrenamiento(ID),
-	FOREIGN KEY(IdEjercicio) REFERENCES Ejercicios(ID)
+	FOREIGN KEY(IdSesionEntrenamiento) REFERENCES SesionesEntrenamiento(IdSesionEntrenamiento),
+	FOREIGN KEY(IdEjercicio) REFERENCES Ejercicios(IdEjercicio)
 )
 GO
 
@@ -141,28 +142,28 @@ VALUES
 ('Trimestre Promocional', 15000.00, 90),
 ('Pase Libre Semestral', 13500.00, 180);
 
-INSERT INTO Usuarios (NombreCompleto, Email, FechaNacimiento, PesoCorporalKG, IdRol, FechaIngreso)
+INSERT INTO Usuarios (Nombre, Apellido, Email, FechaNacimiento, PesoCorporalKG, IdRol, FechaIngreso)
 VALUES 
-('Alejandro Rossi', 'alejandro.rossi@email.com', '1988-04-12', 82.50, 1, '2025-01-10 09:00:00'),
-('Mariana Fernández', 'mariana.f@email.com', '1992-09-25', 64.20, 2, '2025-02-15 14:30:00'),
-('Carlos Mendoza', 'carlos.mendoza@email.com', '1985-11-05', 91.80, 2, '2025-03-01 08:15:00'),
-('Sofía Benítez', 'sofia.b@email.com', '1998-07-19', 58.70, 3, '2026-01-05 10:00:00'),
-('Lucas Giménez', 'lucas.gimenez@email.com', '1994-02-28', 78.40, 3, '2026-01-12 18:20:00'),
-('Florencia Herrera', 'flor.herrera@email.com', '1991-05-14', 61.10, 3, '2026-01-20 11:45:00'),
-('Diego Romero', 'diego.romero@email.com', '1990-12-01', 85.30, 3, '2026-02-02 16:00:00'),
-('Camila Maidana', 'camila.m@email.com', '2000-03-22', 55.00, 3, '2026-02-10 09:30:00'),
-('Martín Silva', 'martin.silva@email.com', '1987-08-30', 95.20, 3, '2026-02-18 20:15:00'),
-('Valentina Ríos', 'vale.rios@email.com', '1996-10-10', 67.80, 3, '2026-03-01 07:00:00'),
-('Facundo Castro', 'facu.castro@email.com', '1993-01-15', 73.90, 3, '2026-03-05 15:30:00'),
-('Agustina Álvarez', 'agus.alvarez@email.com', '1995-06-08', 62.40, 3, '2026-03-12 19:00:00'),
-('Gonzalo Pereyra', 'gonza.p@email.com', '1989-11-23', 88.10, 3, '2026-03-20 08:00:00'),
-('Natalia Torres', 'natalia.torres@email.com', '1997-04-04', 59.50, 3, '2026-04-02 12:15:00'),
-('Joaquín Domínguez', 'joaco.d@email.com', '1992-02-17', 81.00, 3, '2026-04-10 17:45:00'),
-('Elena Acosta', 'elena.acosta@email.com', '1986-07-29', 70.30, 3, '2026-04-18 10:30:00'),
-('Bautista Morales', 'bauti.morales@email.com', '2001-09-05', 76.60, 3, '2026-04-25 16:20:00'),
-('Victoria Ortega', 'viqui.ortega@email.com', '1994-12-12', 63.80, 3, '2026-05-02 09:00:00'),
-('Juan Pablo López', 'juanpi.lopez@email.com', '1991-03-27', 89.40, 3, '2026-05-10 14:00:00'),
-('Micaela Núñez', 'mica.nunez@email.com', '1999-05-18', 57.20, 3, '2026-05-15 11:10:00');
+('Alejandro', 'Rossi', 'alejandro.rossi@email.com', '1988-04-12', 82.50, 1, '2025-01-10 09:00:00'),
+('Mariana', 'Fernández', 'mariana.f@email.com', '1992-09-25', 64.20, 2, '2025-02-15 14:30:00'),
+('Carlos', 'Mendoza', 'carlos.mendoza@email.com', '1985-11-05', 91.80, 2, '2025-03-01 08:15:00'),
+('Sofía', 'Benítez', 'sofia.b@email.com', '1998-07-19', 58.70, 3, '2026-01-05 10:00:00'),
+('Lucas', 'Giménez', 'lucas.gimenez@email.com', '1994-02-28', 78.40, 3, '2026-01-12 18:20:00'),
+('Florencia', 'Herrera', 'flor.herrera@email.com', '1991-05-14', 61.10, 3, '2026-01-20 11:45:00'),
+('Diego', 'Romero', 'diego.romero@email.com', '1990-12-01', 85.30, 3, '2026-02-02 16:00:00'),
+('Camila', 'Maidana', 'camila.m@email.com', '2000-03-22', 55.00, 3, '2026-02-10 09:30:00'),
+('Martín', 'Silva', 'martin.silva@email.com', '1987-08-30', 95.20, 3, '2026-02-18 20:15:00'),
+('Valentina', 'Ríos', 'vale.rios@email.com', '1996-10-10', 67.80, 3, '2026-03-01 07:00:00'),
+('Facundo', 'Castro', 'facu.castro@email.com', '1993-01-15', 73.90, 3, '2026-03-05 15:30:00'),
+('Agustina', 'Álvarez', 'agus.alvarez@email.com', '1995-06-08', 62.40, 3, '2026-03-12 19:00:00'),
+('Gonzalo', 'Pereyra', 'gonza.p@email.com', '1989-11-23', 88.10, 3, '2026-03-20 08:00:00'),
+('Natalia', 'Torres', 'natalia.torres@email.com', '1997-04-04', 59.50, 3, '2026-04-02 12:15:00'),
+('Joaquín', 'Domínguez', 'joaco.d@email.com', '1992-02-17', 81.00, 3, '2026-04-10 17:45:00'),
+('Elena', 'Acosta', 'elena.acosta@email.com', '1986-07-29', 70.30, 3, '2026-04-18 10:30:00'),
+('Bautista', 'Morales', 'bauti.morales@email.com', '2001-09-05', 76.60, 3, '2026-04-25 16:20:00'),
+('Victoria', 'Ortega', 'viqui.ortega@email.com', '1994-12-12', 63.80, 3, '2026-05-02 09:00:00'),
+('Juan Pablo', 'López', 'juanpi.lopez@email.com', '1991-03-27', 89.40, 3, '2026-05-10 14:00:00'),
+('Micaela', 'Núñez', 'mica.nunez@email.com', '1999-05-18', 57.20, 3, '2026-05-15 11:10:00');
 
 INSERT INTO Ejercicios (Nombre, IdGrupoMuscular)
 VALUES 
@@ -204,7 +205,7 @@ VALUES
 ('Fuerza Máxima - Diego', 7, '2026-02-03 20:00:00'),
 ('Rutina Adaptada - Martín', 9, '2026-02-19 10:20:00');
 
-INSERT INTO Suscripciones (IdUsuario, IdPlan, IdEstado, FechaInicio, FechaVencimiento)
+INSERT INTO Suscripciones (IdUsuario, IdPlan, IdSuscripcionEstado, FechaInicio, FechaVencimiento)
 VALUES 
 (4, 2, 2, '2026-01-05', '2026-02-04'),
 (5, 3, 2, '2026-01-12', '2026-02-11'),
@@ -259,7 +260,7 @@ VALUES
 (11, 2, '2026-05-08 17:00:00', '2026-05-08 18:20:00'),
 (12, 2, '2026-05-14 19:15:00', '2026-05-14 20:30:00');
 
-INSERT INTO SeriesCompletadas (IdSesion, IdEjercicio, PesoLevantadoKG, RepeticionesLogradas, RIR, EsRecordPersonal)
+INSERT INTO SeriesCompletadas (IdSesionEntrenamiento, IdEjercicio, PesoLevantadoKG, RepeticionesLogradas, RIR, EsRecordPersonal)
 VALUES 
 (1, 7, 40, 10, 3, 0), 
 (1, 7, 50, 8,  2, 0),
