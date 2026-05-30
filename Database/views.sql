@@ -4,8 +4,8 @@ GO
 ---------------------------------------------------------------------------------------------------------------------
 -- Vista de Suscripciones por Usuario
 
--- La vista sirve para consultar información sobre las suscripciones de los usuarios del gimnasio,
--- incluyendo el plan contratado, estado de la suscripción, fechas de vigencia y días restantes hasta el vencimiento.
+-- La vista sirve para consultar informaciï¿½n sobre las suscripciones de los usuarios del gimnasio,
+-- incluyendo el plan contratado, estado de la suscripciï¿½n, fechas de vigencia y dï¿½as restantes hasta el vencimiento.
 ---------------------------------------------------------------------------------------------------------------------
 
 --CREATE VIEW VW_SuscripcionesUsuarios
@@ -37,7 +37,7 @@ GO
 -- Vista de Historial de Entrenamiento
 
 -- La vista sirve para consultar un resumen de las sesiones de entrenamiento realizadas por los usuarios del gimnasio,
--- mostrando la rutina utilizada, fecha, horario y duración de cada entrenamiento.
+-- mostrando la rutina utilizada, fecha, horario y duraciï¿½n de cada entrenamiento.
 ----------------------------------------------------------------------------------
 
 --CREATE VIEW VW_HistorialEntrenamientoUsuarios
@@ -59,3 +59,15 @@ LEFT JOIN Rutinas r
 
 GO
 
+
+----------------------------------------------------------------------------------
+-- Vista de todos los usuarios del sistema con sus respectivos atributos
+
+-- La vista sirve para consultar todos los datos necesario para instanciar los distintos tipos de usuarios
+----------------------------------------------------------------------------------
+CREATE VIEW VW_Usuarios AS
+SELECT U.IdUsuario, U.Nombre, U.Apellido, U.Email, U.FechaNacimiento, U.PesoCorporalKG, U.IdRol, R.Rol, U.FechaIngreso, S.IdPlan, P.Nombre AS NombrePlan, P.PrecioMensual, P.DuracionDias, S.IdSuscripcionEstado, SE.Nombre AS NombreEstado, S.FechaInicio, S.FechaVencimiento FROM Usuarios U
+LEFT JOIN Suscripciones S ON U.IdUsuario = S.IdUsuario
+LEFT JOIN Planes P ON P.IdPlan = S.IdPlan
+LEFT JOIN SuscripcionesEstados SE ON S.IdSuscripcionEstado = SE.IdSuscripcionEstado
+LEFT JOIN Roles R ON U.IdRol = R.IdRol
