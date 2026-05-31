@@ -5,6 +5,32 @@ GO
 USE GestionGimnasio;
 GO
 
+CREATE TABLE GruposMusculares (  -- Pecho, biceps, etc.
+	IdGruposMusculares	TINYINT NOT NULL IDENTITY(1,1),
+	Nombre 				NVARCHAR(100) NOT NULL
+)
+GO
+
+CREATE TABLE SuscripcionesEstados (  -- Activa, vencida, etc.
+	IdSuscripcionesEstados	TINYINT NOT NULL IDENTITY(1,1),
+	Nombre 					NVARCHAR(50) NOT NULL
+)
+GO
+
+CREATE TABLE Roles (  -- Entrenador, Administrativo, etc.
+	IdRoles		TINYINT NOT NULL IDENTITY(1,1),
+	Rol 		NVARCHAR(50) NOT NULL
+);
+GO
+
+CREATE TABLE Planes (  -- Los tipos de suscripcion que ofrece el gimnasio
+	IdPlanes		SMALLINT NOT NULL IDENTITY(1,1),
+	Nombre 			NVARCHAR(150) NOT NULL UNIQUE,
+	PrecioMensual 	DECIMAL(8,2) NOT NULL DEFAULT 0,
+	DuracionDias 	SMALLINT DEFAULT 0
+)
+GO
+
 CREATE TABLE Usuarios (  -- Almacena tanto a los clientes como al staff (entrenadores, administradores)
 	IdUsuarios			INTEGER NOT NULL IDENTITY(1,1),
 	Nombre		 		NVARCHAR(70) NOT NULL,
@@ -15,14 +41,6 @@ CREATE TABLE Usuarios (  -- Almacena tanto a los clientes como al staff (entrena
 	IdRol 				TINYINT NOT NULL,
 	FechaIngreso 		DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	FOREIGN KEY(IdRol) REFERENCES Roles(ID)
-)
-GO
-
-CREATE TABLE Planes (  -- Los tipos de suscripcion que ofrece el gimnasio
-	IdPlanes		SMALLINT NOT NULL IDENTITY(1,1),
-	Nombre 			NVARCHAR(150) NOT NULL UNIQUE,
-	PrecioMensual 	DECIMAL(8,2) NOT NULL DEFAULT 0,
-	DuracionDias 	SMALLINT DEFAULT 0
 )
 GO
 
@@ -89,20 +107,3 @@ CREATE TABLE SeriesCompletadas (  -- Guarda cada serie efectiva que hace el usua
 	FOREIGN KEY(IdEjercicio) REFERENCES Ejercicios(ID)
 )
 GO
-
-CREATE TABLE GruposMusculares (  -- Pecho, biceps, etc.
-	IdGruposMusculares	TINYINT NOT NULL IDENTITY(1,1),
-	Nombre 				NVARCHAR(100) NOT NULL
-)
-GO
-
-CREATE TABLE SuscripcionesEstados (  -- Activa, vencida, etc.
-	IdSuscripcionesEstados	TINYINT NOT NULL IDENTITY(1,1),
-	Nombre 					NVARCHAR(50) NOT NULL
-)
-GO
-
-CREATE TABLE Roles (  -- Entrenador, Administrativo, etc.
-	IdRoles		TINYINT NOT NULL IDENTITY(1,1),
-	Rol 		NVARCHAR(50) NOT NULL
-);
