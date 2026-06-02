@@ -45,7 +45,8 @@ CREATE TABLE Usuarios (  -- Almacena tanto a los clientes como al staff (entrena
 	FechaNacimiento 	DATE,
 	PesoCorporalKG 		DECIMAL(5,2) NOT NULL DEFAULT 0,
 	IdRol 				TINYINT NOT NULL,
-	FechaIngreso 		DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+	FechaIngreso 		DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	Activo				BIT NOT NULL DEFAULT 1
 	PRIMARY KEY (IdUsuarios),
 	FOREIGN KEY(IdRol) REFERENCES Roles(IdRoles)
 );
@@ -79,7 +80,8 @@ CREATE TABLE Rutinas (  -- Plantillas de entrenamiento que un entrenador puede a
 	Nombre 			NVARCHAR(150),
 	IdUsuario 		INTEGER, --<-- Si este atributo es NULL, es una rutina general que puede elegir cualquier cliente/entrenador.
 	FechaCreacion 	DATETIME,
-	Dia				VARCHAR(15) --<-- Si este atributo es NULL, es rutina libre (lo puede realizar cualquier dia de la semana).
+	Dia				VARCHAR(15), --<-- Si este atributo es NULL, es rutina libre (lo puede realizar cualquier dia de la semana).
+	Activo			BIT NOT NULL DEFAULT 1
 	PRIMARY KEY (IdRutinas),
 	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(IdUsuarios)
 );
