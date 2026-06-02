@@ -77,8 +77,9 @@ GO
 CREATE TABLE Rutinas (  -- Plantillas de entrenamiento que un entrenador puede asignar o que el usuario arma (Ej: Empuje/Tiron/Piernas)
 	IdRutinas		INTEGER NOT NULL IDENTITY(1,1),
 	Nombre 			NVARCHAR(150),
-	IdUsuario 		INTEGER,
-	FechaCreacion 	DATETIME
+	IdUsuario 		INTEGER, --<-- Si este atributo es NULL, es una rutina general que puede elegir cualquier cliente/entrenador.
+	FechaCreacion 	DATETIME,
+	Dia				VARCHAR(15) --<-- Si este atributo es NULL, es rutina libre (lo puede realizar cualquier dia de la semana).
 	PRIMARY KEY (IdRutinas),
 	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(IdUsuarios)
 );
@@ -87,11 +88,14 @@ GO
 CREATE TABLE RutinaEjercicios (  -- Asigna los ejercicios específicos a una plantilla de rutina
 	IdRutinasEjercicios		INTEGER NOT NULL IDENTITY(1,1),
 	IdEjercicio 			INTEGER NOT NULL,
+	IdRutina				INTEGER NOT NULL,
+	ObjetivoKG				INTEGER,
 	ObjetivoSeries 			SMALLINT DEFAULT 1,
 	ObjetivoRepeticiones 	SMALLINT DEFAULT 1,
-	OrdenEjercicio 			TINYINT DEFAULT 1
+	OrdenEjercicio 			TINYINT DEFAULT 1 --<-- Si debe ser el primer ejercicio de la rutina del dia, el ultimo, etc.
 	PRIMARY KEY (IdRutinasEjercicios),
-	FOREIGN KEY(IdEjercicio) REFERENCES Ejercicios(IdEjercicios)
+	FOREIGN KEY(IdEjercicio) REFERENCES Ejercicios(IdEjercicios),
+	FOREIGN KEY(IdRutina) REFERENCES Rutinas(IdRutinas)
 );
 GO
 
@@ -113,7 +117,7 @@ CREATE TABLE SeriesCompletadas (  -- Guarda cada serie efectiva que hace el usua
 	IdEjercicio 			INTEGER NOT NULL,
 	PesoLevantadoKG 		SMALLINT NOT NULL DEFAULT 0,
 	RepeticionesLogradas 	SMALLINT NOT NULL DEFAULT 0,
-	RIR 					TINYINT,
+	RIR 					TINYINT,  --<-- Reps In Reserve, o repeticiones de reserva que le quedaban antes de llegar al fallo.
 	EsRecordPersonal 		BIT NOT NULL DEFAULT 0
 	PRIMARY KEY (IdSeriesCompletadas),
 	FOREIGN KEY(IdSesion) REFERENCES SesionesEntrenamiento(IdSesionesEntrenamiento),
