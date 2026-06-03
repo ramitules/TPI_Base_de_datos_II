@@ -99,3 +99,106 @@ BEGIN
 END;
 
 GO
+
+-- Obtener usuarios dependiendo del rol. Acepta la cadena 'TODOS' para obtener todos los usuarios sin filtro
+CREATE PROCEDURE sp_ObtenerUsuarios (@Rol VARCHAR(50))
+AS
+BEGIN
+	IF @Rol = 'TODOS'
+		BEGIN
+			SELECT * FROM Usuarios
+		END
+	ELSE
+		BEGIN
+			SELECT IdUsuarios, Nombre, Apellido, Email, FechaNacimiento, PesoCorporalKG, IdRol, FechaIngreso, Activo
+			FROM Usuarios
+			LEFT JOIN Roles
+				ON Roles.IdRoles = Usuarios.IdRol
+			WHERE Roles.Rol = @Rol
+		END
+END
+GO
+
+-- Obtener datos completos de las suscripciones de un usuario
+CREATE PROCEDURE sp_SuscripcionCompleta (@ID INTEGER)
+AS
+BEGIN
+	SELECT TOP 1
+		S.IdSuscripciones   as IdSuscripcion,
+		S.FechaInicio       as FechaInicio,
+		S.FechaVencimiento  as FechaVencimiento,
+		S.IdPlan            as IdPlan,
+		S.IdEstado          as IdEstado,
+		P.Nombre            as NombrePlan,
+		P.PrecioMensual     as PrecioPlan,
+		P.DuracionDias      as DuracionPlan
+	FROM Suscripciones S
+	LEFT JOIN Planes P
+		ON S.IdPlan = P.IdPlanes
+	WHERE S.IdUsuario = @ID
+	ORDER BY S.FechaVencimiento ASC
+END
+GO
+
+
+-- Obtener records personales del usuario
+CREATE PROCEDURE sp_RecordsPersonales (@ID INTEGER)
+AS
+BEGIN
+	SELECT
+		SC.PesoLevantadoKG		as PesoKG,
+		E.IdEjercicios			as IdEjercicio,
+		E.Nombre				as EjercicioNombre,
+		GM.IdGruposMusculares	as IdGrupoMuscular,
+		GM.Nombre				as GrupoMuscularNombre
+	FROM SeriesCompletadas AS SC
+	LEFT JOIN Ejercicios as E
+		ON E.IdEjercicios = SC.IdEjercicio
+	LEFT JOIN GruposMusculares as GM
+		ON GM.IdGruposMusculares = E.IdGrupoMuscular
+	WHERE EsRecordPersonal = 1
+END
+GO
+
+
+-- Crear usuario
+CREATE PROCEDURE sp_CrearUsuario (
+	@Nombre VARCHAR(70),
+	@Apellido VARCHAR(70),
+	@Email VARCHAR(150),
+	@FechaNacimiento DATETIME,
+	@PesoCorporalKG DECIMAL(5, 2),
+	@IdRol TINYINT,
+	@FechaIngreso DATETIME
+)
+AS
+BEGIN
+	INSERT INTO Usuarios (Nombre, Apellido, Email, FechaNacimiento, PesoCorporalKG, IdRol, FechaIngreso)
+	VALUES (@Nombre, @Apellido, @Email, @FechaNacimiento, @PesoCorporalKG, @IdRol, @FechaIngreso)
+END
+GO
+
+-- Modificar usuario
+CREATE PROCEDURE sp_ModificarUsuario (
+	@Nombre VARCHAR(70),
+	@Apellido VARCHAR(70),
+	@Email VARCHAR(150),
+	@FechaNacimiento DATETIME,
+	@PesoCorporal DECIMAL(5, 2),
+	@IdRol TINYINT,
+	@FechaIngreso DATETIME,
+	@IdUsuario INT
+)
+AS
+BEGIN
+	UPDATE Usuarios SET
+		Nombre = @Nombre, 
+		Apellido = @Apellido, 
+		Email = @Email, 
+		FechaNacimiento = @FechaNacimiento,
+		PesoCorporalKG = @PesoCorporal, 
+		IdRol = @IdRol, 
+		FechaIngreso = @FechaIngreso
+	WHERE IdUsuarios = @IdUsuario
+END
+
