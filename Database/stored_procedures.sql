@@ -87,4 +87,15 @@ END;
 
 GO
 
+-- SUSCRIPCIONES
 
+-- Actualizar el estado de las suscripciones vencidas
+Create PROCEDURE SP_Suscripciones_actualizar_estado_vencidas
+AS
+BEGIN 
+    UPDATE Suscripciones
+    SET IdEstado = 2
+    WHERE FechaVencimiento < GETDATE() AND IdEstado = 1;
+END;
+
+GO
