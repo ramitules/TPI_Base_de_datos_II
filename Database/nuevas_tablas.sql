@@ -41,7 +41,7 @@ CREATE TABLE Usuarios (  -- Almacena tanto a los clientes como al staff (entrena
 	IdUsuarios			INTEGER NOT NULL IDENTITY(1,1),
 	Nombre		 		NVARCHAR(70) NOT NULL,
 	Apellido	 		NVARCHAR(70) NOT NULL,
-	Email 				NVARCHAR(150) NOT NULL,
+	Email 				NVARCHAR(150) NOT NULL UNIQUE,
 	FechaNacimiento 	DATE,
 	PesoCorporalKG 		DECIMAL(5,2) NOT NULL DEFAULT 0,
 	IdRol 				TINYINT NOT NULL,
@@ -62,7 +62,8 @@ CREATE TABLE Suscripciones (  -- Tabla puente (con datos extra) que relaciona a 
 	PRIMARY KEY (IdSuscripciones),
 	FOREIGN KEY(IdEstado) REFERENCES SuscripcionesEstados(IdSuscripcionesEstados),
 	FOREIGN KEY(IdPlan) REFERENCES Planes(IdPlanes),
-	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(IdUsuarios)
+	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(IdUsuarios),
+	CHECK (FechaVencimiento > FechaInicio),
 );
 GO
 
@@ -109,7 +110,8 @@ CREATE TABLE SesionesEntrenamiento (  -- Registra el momento exacto en que un us
 	FechaHoraFin 				DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 	PRIMARY KEY (IdSesionesEntrenamiento),
 	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(IdUsuarios),
-	FOREIGN KEY(IdRutina) REFERENCES Rutinas(IdRutinas)
+	FOREIGN KEY(IdRutina) REFERENCES Rutinas(IdRutinas),
+	CHECK (FechaHoraFin >= FechaHoraInicio),
 );
 GO
 
