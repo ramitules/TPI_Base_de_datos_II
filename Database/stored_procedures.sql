@@ -1,9 +1,6 @@
 USE GestionGimnasio
 GO
 
-
---Crear y modificar las rutinas para los socios.
-
 --Crear rutinas generales
 CREATE PROCEDURE SP_Rutina_General
     @NOMBRE VARCHAR(150)
@@ -54,7 +51,7 @@ AS
 BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
-            UPDATE Rutinas SET Nombre = @NOMBRE WHERE ID = @ID;
+            UPDATE Rutinas SET Nombre = @NOMBRE WHERE IdRutinas = @ID;
         COMMIT TRANSACTION;
         PRINT 'OK';
     END TRY
@@ -75,7 +72,7 @@ AS
 BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
-            UPDATE Rutinas SET Nombre = @NOMBRE, IdUsuario = @ID_USUARIO WHERE ID = @ID;;
+            UPDATE Rutinas SET Nombre = @NOMBRE, IdUsuario = @ID_USUARIO WHERE IdRutinas = @ID;;
         COMMIT TRANSACTION;
         PRINT 'OK';
     END TRY
@@ -110,11 +107,11 @@ BEGIN
 		END
 	ELSE
 		BEGIN
-			SELECT IdUsuarios, Nombre, Apellido, Email, FechaNacimiento, PesoCorporalKG, IdRol, FechaIngreso, Activo
+			SELECT IdUsuarios, Usuarios.Nombre, Apellido, Email, FechaNacimiento, PesoCorporalKG, IdRol, FechaIngreso, Activo
 			FROM Usuarios
 			LEFT JOIN Roles
 				ON Roles.IdRoles = Usuarios.IdRol
-			WHERE Roles.Rol = @Rol
+			WHERE Roles.Nombre = @Rol
 		END
 END
 GO

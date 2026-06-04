@@ -23,7 +23,7 @@ GO
 
 CREATE TABLE Roles (  -- Entrenador, Administrativo, etc.
 	IdRoles		TINYINT NOT NULL IDENTITY(1,1),
-	Rol 		NVARCHAR(50) NOT NULL
+	Nombre 		NVARCHAR(50) NOT NULL
 	PRIMARY KEY (IdRoles)
 );
 GO
