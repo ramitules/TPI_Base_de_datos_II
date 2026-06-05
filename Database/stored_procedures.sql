@@ -166,12 +166,27 @@ CREATE PROCEDURE sp_CrearUsuario (
 	@FechaNacimiento DATETIME,
 	@PesoCorporalKG DECIMAL(5, 2),
 	@IdRol TINYINT,
-	@FechaIngreso DATETIME
+	@FechaIngreso DATETIME,
+	@CodUser VARCHAR(20),
+	@Pass VARCHAR(40)
 )
 AS
 BEGIN
-	INSERT INTO Usuarios (Nombre, Apellido, Email, FechaNacimiento, PesoCorporalKG, IdRol, FechaIngreso)
-	VALUES (@Nombre, @Apellido, @Email, @FechaNacimiento, @PesoCorporalKG, @IdRol, @FechaIngreso)
+	BEGIN TRY
+		BEGIN TRANSACTION
+			DECLARE @IdUsuario INT; 
+			INSERT INTO Usuarios (Nombre, Apellido, Email, FechaNacimiento, PesoCorporalKG, IdRol, FechaIngreso)
+			VALUES (@Nombre, @Apellido, @Email, @FechaNacimiento, @PesoCorporalKG, @IdRol, @FechaIngreso)
+			SET @IdUsuario = (SELECT SCOPE_IDENTITY());
+			INSERT INTO AccesoUsuarios (IdUsuarios, CodUser, Pass)
+			VALUES (@IdUsuario, @CodUser, @Pass)
+		COMMIT TRANSACTION
+		SELECT @IdUsuario
+	END TRY
+	BEGIN CATCH
+		IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;   
+        PRINT 'Error al registrar usuario: ' + ERROR_MESSAGE();
+	END CATCH
 END
 GO
 
