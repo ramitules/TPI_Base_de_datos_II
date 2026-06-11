@@ -131,7 +131,6 @@ GO
 
 CREATE TABLE AccesoUsuarios (  -- Guarda el codigo de usuario y su contraseña para el acceso y/o demas validaciones
 	IdUsuarios				INT NOT NULL,
-	CodUser 				VARCHAR (20) NOT NULL,
 	Pass		 			VARCHAR (40) NOT NULL,
 	FOREIGN KEY(IdUsuarios) REFERENCES Usuarios (IdUsuarios)
 );
