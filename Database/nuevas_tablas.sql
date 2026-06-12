@@ -42,7 +42,7 @@ CREATE TABLE Usuarios (  -- Almacena tanto a los clientes como al staff (entrena
 	Nombre		 		NVARCHAR(70) NOT NULL,
 	Apellido	 		NVARCHAR(70) NOT NULL,
 	Email 				NVARCHAR(150) NOT NULL UNIQUE,
-	FechaNacimiento 	DATE,
+	FechaNacimiento 	DATE NOT NULL,
 	PesoCorporalKG 		DECIMAL(5,2) NOT NULL DEFAULT 0,
 	IdRol 				TINYINT NOT NULL,
 	FechaIngreso 		DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -78,9 +78,9 @@ GO
 
 CREATE TABLE Rutinas (  -- Plantillas de entrenamiento que un entrenador puede asignar o que el usuario arma (Ej: Empuje/Tiron/Piernas)
 	IdRutinas		INTEGER NOT NULL IDENTITY(1,1),
-	Nombre 			NVARCHAR(150),
+	Nombre 			NVARCHAR(150) NOT NULL,
 	IdUsuario 		INTEGER, --<-- Si este atributo es NULL, es una rutina general que puede elegir cualquier cliente/entrenador.
-	FechaCreacion 	DATETIME,
+	FechaCreacion 	DATETIME NOT NULL,
 	Dia				VARCHAR(15), --<-- Si este atributo es NULL, es rutina libre (lo puede realizar cualquier dia de la semana).
 	Activo			BIT NOT NULL DEFAULT 1
 	PRIMARY KEY (IdRutinas),
@@ -92,7 +92,7 @@ CREATE TABLE RutinaEjercicios (  -- Asigna los ejercicios específicos a una pla
 	IdRutinasEjercicios		INTEGER NOT NULL IDENTITY(1,1),
 	IdEjercicio 			INTEGER NOT NULL,
 	IdRutina				INTEGER NOT NULL,
-	ObjetivoKG				INTEGER,
+	ObjetivoKG				INTEGER DEFAULT 1,
 	ObjetivoSeries 			SMALLINT DEFAULT 1,
 	ObjetivoRepeticiones 	SMALLINT DEFAULT 1,
 	OrdenEjercicio 			TINYINT DEFAULT 1 --<-- Si debe ser el primer ejercicio de la rutina del dia, el ultimo, etc.
