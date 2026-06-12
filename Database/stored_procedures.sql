@@ -166,14 +166,54 @@ CREATE PROCEDURE sp_CrearUsuario (
 	@FechaNacimiento DATETIME,
 	@PesoCorporalKG DECIMAL(5, 2),
 	@IdRol TINYINT,
-	@FechaIngreso DATETIME
+	@FechaIngreso DATETIME,
+	@Pass VARCHAR(40)
 )
 AS
 BEGIN
-	INSERT INTO Usuarios (Nombre, Apellido, Email, FechaNacimiento, PesoCorporalKG, IdRol, FechaIngreso)
-	VALUES (@Nombre, @Apellido, @Email, @FechaNacimiento, @PesoCorporalKG, @IdRol, @FechaIngreso)
+	BEGIN TRY
+		BEGIN TRANSACTION
+			DECLARE @IdUsuario INT; 
+			INSERT INTO Usuarios (Nombre, Apellido, Email, FechaNacimiento, PesoCorporalKG, IdRol, FechaIngreso)
+			VALUES (@Nombre, @Apellido, @Email, @FechaNacimiento, @PesoCorporalKG, @IdRol, @FechaIngreso)
+			SET @IdUsuario = (SELECT SCOPE_IDENTITY());
+			INSERT INTO AccesoUsuarios (IdUsuarios, Pass)
+			VALUES (@IdUsuario, @Pass)
+		COMMIT TRANSACTION
+		SELECT @IdUsuario
+	END TRY
+	BEGIN CATCH
+		IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;   
+        PRINT 'Error al registrar usuario: ' + ERROR_MESSAGE();
+	END CATCH
 END
 GO
+drop procedure sp_CrearUsuario
+select * from Usuarios
+DECLARE @NombreAdmin VARCHAR(70) = 'Juana',
+        @ApellidoAdmin VARCHAR(70) = 'Manso',
+        @EmailAdmin VARCHAR(150) = 'j.manso@gym.com',
+        @FechaNacimientoAdmin DATETIME = '1989-11-23',
+        @PesoCorporalKGAdmin DECIMAL(5, 2) = 0.00, -- Mandamos 0 desde C# para Admin
+        @IdRolAdmin TINYINT = 1,                   -- Rol 1 para Administrador
+        @FechaIngresoAdmin DATETIME = GETDATE(),
+        @PassAdmin VARCHAR(40) = 'AdminFuerte2026';
+
+-- EJECUCIÓN DEL PROCEDIMIENTO
+EXEC sp_CrearUsuario 
+    @Nombre = @NombreAdmin, 
+    @Apellido = @ApellidoAdmin, 
+    @Email = @EmailAdmin, 
+    @FechaNacimiento = @FechaNacimientoAdmin, 
+    @PesoCorporalKG = @PesoCorporalKGAdmin, 
+    @IdRol = @IdRolAdmin, 
+    @FechaIngreso = @FechaIngresoAdmin, 
+    @Pass = @PassAdmin;
+go
+select * from Usuarios
+select * from AccesoUsuarios
+delete AccesoUsuarios where IdUsuarios = 38
+delete Usuarios where IdUsuarios = 37
 
 -- Modificar usuario
 CREATE PROCEDURE sp_ModificarUsuario (
