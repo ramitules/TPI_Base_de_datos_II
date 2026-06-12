@@ -17,7 +17,8 @@ INSERT INTO SuscripcionesEstados (Nombre)
 VALUES 
 ('Activa'),
 ('Vencida'),
-('Cancelada');
+('Cancelada'),
+('Activa pendiente');
 GO
 
 INSERT INTO Roles 
