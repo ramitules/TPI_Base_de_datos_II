@@ -199,21 +199,6 @@ DECLARE @NombreAdmin VARCHAR(70) = 'Juana',
         @FechaIngresoAdmin DATETIME = GETDATE(),
         @PassAdmin VARCHAR(40) = 'AdminFuerte2026';
 
--- EJECUCIÓN DEL PROCEDIMIENTO
-EXEC sp_CrearUsuario 
-    @Nombre = @NombreAdmin, 
-    @Apellido = @ApellidoAdmin, 
-    @Email = @EmailAdmin, 
-    @FechaNacimiento = @FechaNacimientoAdmin, 
-    @PesoCorporalKG = @PesoCorporalKGAdmin, 
-    @IdRol = @IdRolAdmin, 
-    @FechaIngreso = @FechaIngresoAdmin, 
-    @Pass = @PassAdmin;
-go
-select * from Usuarios
-select * from AccesoUsuarios
-delete AccesoUsuarios where IdUsuarios = 38
-delete Usuarios where IdUsuarios = 37
 
 -- Modificar usuario
 CREATE PROCEDURE sp_ModificarUsuario (
