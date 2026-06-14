@@ -63,11 +63,14 @@ GO
 ----------------------------------------------------------------------------------
 -- Vista de todos los usuarios del sistema con sus respectivos atributos
 
--- La vista sirve para consultar todos los datos necesario para instanciar los distintos tipos de usuarios
+-- La vista sirve para consultar todos los datos necesario para instanciar los distintos tipos de usuarios y a la vez para la consulta del logueo
 ----------------------------------------------------------------------------------
 CREATE VIEW VW_Usuarios AS
-SELECT U.IdUsuario, U.Nombre, U.Apellido, U.Email, U.FechaNacimiento, U.PesoCorporalKG, U.IdRol, R.Rol, U.FechaIngreso, S.IdPlan, P.Nombre AS NombrePlan, P.PrecioMensual, P.DuracionDias, S.IdSuscripcionEstado, SE.Nombre AS NombreEstado, S.FechaInicio, S.FechaVencimiento FROM Usuarios U
-LEFT JOIN Suscripciones S ON U.IdUsuario = S.IdUsuario
-LEFT JOIN Planes P ON P.IdPlan = S.IdPlan
-LEFT JOIN SuscripcionesEstados SE ON S.IdSuscripcionEstado = SE.IdSuscripcionEstado
-LEFT JOIN Roles R ON U.IdRol = R.IdRol
+SELECT U.IdUsuarios, U.Nombre, U.Apellido, U.Email, U.FechaNacimiento, U.PesoCorporalKG, U.IdRol, R.Nombre AS [Rol Nombre], U.FechaIngreso, S.IdPlan, P.Nombre AS [Plan], P.PrecioMensual, P.DuracionDias, S.IdEstado, SE.Nombre AS [Estado], S.FechaInicio, S.FechaVencimiento, AU.Pass FROM Usuarios U
+LEFT JOIN Suscripciones S ON U.IdUsuarios = S.IdUsuario
+LEFT JOIN Planes P ON P.IdPlanes = S.IdPlan
+LEFT JOIN SuscripcionesEstados SE ON S.IdEstado = SE.IdSuscripcionesEstados
+LEFT JOIN Roles R ON U.IdRol = R.IdRoles
+LEFT JOIN AccesoUsuarios AU ON U.IdUsuarios = AU.IdUsuarios
+
+select * from VW_Usuarios

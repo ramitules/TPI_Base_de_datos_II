@@ -188,19 +188,34 @@ BEGIN
 	END CATCH
 END
 GO
-drop procedure sp_CrearUsuario
-select * from Usuarios
-DECLARE @NombreAdmin VARCHAR(70) = 'Juana',
-        @ApellidoAdmin VARCHAR(70) = 'Manso',
-        @EmailAdmin VARCHAR(150) = 'j.manso@gym.com',
-        @FechaNacimientoAdmin DATETIME = '1989-11-23',
-        @PesoCorporalKGAdmin DECIMAL(5, 2) = 0.00, -- Mandamos 0 desde C# para Admin
-        @IdRolAdmin TINYINT = 1,                   -- Rol 1 para Administrador
-        @FechaIngresoAdmin DATETIME = GETDATE(),
-        @PassAdmin VARCHAR(40) = 'AdminFuerte2026';
+
 
 
 -- Modificar usuario
+--CREATE PROCEDURE sp_ModificarUsuario (
+--	@Nombre VARCHAR(70),
+--	@Apellido VARCHAR(70),
+--	@Email VARCHAR(150),
+--	@FechaNacimiento DATETIME,
+--	@PesoCorporal DECIMAL(5, 2),
+--	@IdRol TINYINT,
+--	@FechaIngreso DATETIME,
+--	@IdUsuario INT
+--)
+--AS
+--BEGIN
+--	UPDATE Usuarios SET
+--		Nombre = @Nombre, 
+--		Apellido = @Apellido, 
+--		Email = @Email, 
+--		FechaNacimiento = @FechaNacimiento,
+--		PesoCorporalKG = @PesoCorporal, 
+--		IdRol = @IdRol, 
+--		FechaIngreso = @FechaIngreso
+--	WHERE IdUsuarios = @IdUsuario
+--END
+
+
 CREATE PROCEDURE sp_ModificarUsuario (
 	@Nombre VARCHAR(70),
 	@Apellido VARCHAR(70),
@@ -209,18 +224,34 @@ CREATE PROCEDURE sp_ModificarUsuario (
 	@PesoCorporal DECIMAL(5, 2),
 	@IdRol TINYINT,
 	@FechaIngreso DATETIME,
-	@IdUsuario INT
+	@Activo BIT,
+	@IdUsuario INT,
+	@Pass VARCHAR(150)
 )
 AS
 BEGIN
-	UPDATE Usuarios SET
-		Nombre = @Nombre, 
-		Apellido = @Apellido, 
-		Email = @Email, 
-		FechaNacimiento = @FechaNacimiento,
-		PesoCorporalKG = @PesoCorporal, 
-		IdRol = @IdRol, 
-		FechaIngreso = @FechaIngreso
-	WHERE IdUsuarios = @IdUsuario
+	BEGIN TRY
+		BEGIN TRANSACTION
+			UPDATE Usuarios SET
+				Nombre = @Nombre, 
+				Apellido = @Apellido, 
+				Email = @Email, 
+				FechaNacimiento = @FechaNacimiento,
+				PesoCorporalKG = @PesoCorporal, 
+				IdRol = @IdRol, 
+				FechaIngreso = @FechaIngreso,
+				Activo = @Activo
+			WHERE IdUsuarios = @IdUsuario
+			IF @Pass IS NOT NULL AND @Pass != ''
+			BEGIN
+				UPDATE AccesoUsuarios SET
+					Pass = @Pass
+				WHERE IdUsuarios = @IdUsuario
+			END
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+	END CATCH
 END
 
