@@ -1,7 +1,8 @@
 USE GestionGimnasio
 GO
 
---Crear rutinas generales
+-- RUTINAS
+-- Crear rutinas generales
 CREATE PROCEDURE SP_Rutina_General
     @NOMBRE VARCHAR(150)
 AS
@@ -20,7 +21,7 @@ END;
 
 GO
 
---Crear rutinas personalizada
+-- Crear rutinas personalizada
 CREATE PROCEDURE SP_Rutina_Personaliazda_Usuario
     @NOMBRE VARCHAR(150),
     @ID_USUARIO BIGINT
@@ -40,10 +41,7 @@ END;
 
 GO
 
-
---
-
---Modificar rutina general
+-- Modificar rutina general
 CREATE PROCEDURE SP_Modificar_Rutina_General
     @ID INT,
     @NOMBRE VARCHAR(150)
@@ -63,7 +61,7 @@ END;
 
 GO
 
---Modificar rutina personalizada
+-- Modificar rutina personalizada
 CREATE PROCEDURE SP_Modificar_Rutina_Personaliazda_Usuario
     @ID INT,
     @ID_USUARIO BIGINT,
@@ -81,10 +79,68 @@ BEGIN
         PRINT 'Error al modificar la rutina personalizada: ' + ERROR_MESSAGE();
     END CATCH
 END;
+GO
 
+-- Obtener los ejercicios (con detalle) de una rutina
+CREATE PROCEDURE sp_EjerciciosDeRutina (@IdRutina INT)
+AS
+BEGIN
+	SELECT
+		RE.IdRutinasEjercicios  AS IdRutinaEjercicio,
+		RE.ObjetivoKG           AS ObjetivoKG,
+		RE.ObjetivoSeries       AS ObjetivoSeries,
+		RE.ObjetivoRepeticiones AS ObjetivoRepeticiones,
+		RE.OrdenEjercicio       AS OrdenEjercicio,
+		E.IdEjercicios          AS IdEjercicio,
+		E.Nombre                AS NombreEjercicio,
+		GM.IdGruposMusculares   AS IdGrupoMuscular,
+		GM.Nombre               AS NombreGrupoMuscular
+	FROM RutinaEjercicios RE
+	INNER JOIN Ejercicios E
+		ON RE.IdEjercicio = E.IdEjercicios
+	LEFT JOIN GruposMusculares GM
+		ON E.IdGrupoMuscular = GM.IdGruposMusculares
+	WHERE RE.IdRutina = @IdRutina
+	ORDER BY RE.OrdenEjercicio
+END
 GO
 
 -- SUSCRIPCIONES
+-- Crear suscripcion
+CREATE PROCEDURE sp_CrearSuscripcion (
+	@IdUsuario INT,
+	@IdPlan SMALLINT,
+	@IdEstado TINYINT,
+	@FechaInicio DATE,
+	@FechaVencimiento DATE
+)
+AS
+BEGIN
+	INSERT INTO Suscripciones (IdUsuario, IdPlan, IdEstado, FechaInicio, FechaVencimiento)
+	VALUES (@IdUsuario, @IdPlan, @IdEstado, @FechaInicio, @FechaVencimiento)
+END
+GO
+
+-- Modificar suscripcion
+CREATE PROCEDURE sp_ModificarSuscripcion (
+	@IdUsuario INT,
+	@IdPlan SMALLINT,
+	@IdEstado TINYINT,
+	@FechaInicio DATE,
+	@FechaVencimiento DATE,
+	@IdSuscripcion INT
+)
+AS
+BEGIN
+	UPDATE Suscripciones SET
+		IdUsuario = @IdUsuario,
+		IdPlan = @IdPlan,
+		IdEstado = @IdEstado,
+		FechaInicio = @FechaInicio,
+		FechaVencimiento = @FechaVencimiento
+	WHERE IdSuscripciones = @IdSuscripcion
+END
+GO
 
 -- Actualizar el estado de las suscripciones vencidas
 Create PROCEDURE SP_Suscripciones_actualizar_estado_vencidas
@@ -94,26 +150,6 @@ BEGIN
     SET IdEstado = 2
     WHERE FechaVencimiento < GETDATE() AND IdEstado = 1;
 END;
-
-GO
-
--- Obtener usuarios dependiendo del rol. Acepta la cadena 'TODOS' para obtener todos los usuarios sin filtro
-CREATE PROCEDURE sp_ObtenerUsuarios (@Rol VARCHAR(50))
-AS
-BEGIN
-	IF @Rol = 'TODOS'
-		BEGIN
-			SELECT * FROM Usuarios
-		END
-	ELSE
-		BEGIN
-			SELECT IdUsuarios, Usuarios.Nombre, Apellido, Email, FechaNacimiento, PesoCorporalKG, IdRol, FechaIngreso, Activo
-			FROM Usuarios
-			LEFT JOIN Roles
-				ON Roles.IdRoles = Usuarios.IdRol
-			WHERE Roles.Nombre = @Rol
-		END
-END
 GO
 
 -- Obtener datos completos de la suscripcion de un usuario
@@ -137,28 +173,8 @@ BEGIN
 END
 GO
 
-
--- Obtener records personales del usuario
-CREATE PROCEDURE sp_RecordsPersonales (@ID INTEGER)
-AS
-BEGIN
-	SELECT
-		SC.PesoLevantadoKG		as PesoKG,
-		E.IdEjercicios			as IdEjercicio,
-		E.Nombre				as EjercicioNombre,
-		GM.IdGruposMusculares	as IdGrupoMuscular,
-		GM.Nombre				as GrupoMuscularNombre
-	FROM SeriesCompletadas AS SC
-	LEFT JOIN Ejercicios as E
-		ON E.IdEjercicios = SC.IdEjercicio
-	LEFT JOIN GruposMusculares as GM
-		ON GM.IdGruposMusculares = E.IdGrupoMuscular
-	WHERE EsRecordPersonal = 1
-END
-GO
-
-
--- Crear usuario
+-- USUARIOS
+-- Creacion
 CREATE PROCEDURE sp_CrearUsuario (
 	@Nombre VARCHAR(70),
 	@Apellido VARCHAR(70),
@@ -189,33 +205,7 @@ BEGIN
 END
 GO
 
-
-
--- Modificar usuario
---CREATE PROCEDURE sp_ModificarUsuario (
---	@Nombre VARCHAR(70),
---	@Apellido VARCHAR(70),
---	@Email VARCHAR(150),
---	@FechaNacimiento DATETIME,
---	@PesoCorporal DECIMAL(5, 2),
---	@IdRol TINYINT,
---	@FechaIngreso DATETIME,
---	@IdUsuario INT
---)
---AS
---BEGIN
---	UPDATE Usuarios SET
---		Nombre = @Nombre, 
---		Apellido = @Apellido, 
---		Email = @Email, 
---		FechaNacimiento = @FechaNacimiento,
---		PesoCorporalKG = @PesoCorporal, 
---		IdRol = @IdRol, 
---		FechaIngreso = @FechaIngreso
---	WHERE IdUsuarios = @IdUsuario
---END
-
-
+-- Modificacion
 CREATE PROCEDURE sp_ModificarUsuario (
 	@Nombre VARCHAR(70),
 	@Apellido VARCHAR(70),
@@ -254,4 +244,77 @@ BEGIN
 		IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 	END CATCH
 END
+GO
 
+-- Obtener usuarios dependiendo del rol. Acepta la cadena 'TODOS' para obtener todos los usuarios sin filtro
+CREATE PROCEDURE sp_ObtenerUsuarios (@Rol VARCHAR(50))
+AS
+BEGIN
+	IF @Rol = 'TODOS'
+		BEGIN
+			SELECT * FROM Usuarios
+		END
+	ELSE
+		BEGIN
+			SELECT IdUsuarios, Usuarios.Nombre, Apellido, Email, FechaNacimiento, PesoCorporalKG, IdRol, FechaIngreso, Activo
+			FROM Usuarios
+			LEFT JOIN Roles
+				ON Roles.IdRoles = Usuarios.IdRol
+			WHERE Roles.Nombre = @Rol
+		END
+END
+GO
+
+-- RECORDS
+-- Obtener records personales del usuario
+CREATE PROCEDURE sp_RecordsPersonales (@ID INTEGER)
+AS
+BEGIN
+	SELECT
+		SC.PesoLevantadoKG		as PesoKG,
+		E.IdEjercicios			as IdEjercicio,
+		E.Nombre				as EjercicioNombre,
+		GM.IdGruposMusculares	as IdGrupoMuscular,
+		GM.Nombre				as GrupoMuscularNombre
+	FROM SeriesCompletadas AS SC
+	LEFT JOIN Ejercicios as E
+		ON E.IdEjercicios = SC.IdEjercicio
+	LEFT JOIN GruposMusculares as GM
+		ON GM.IdGruposMusculares = E.IdGrupoMuscular
+	WHERE EsRecordPersonal = 1
+END
+GO
+
+-- SESIONES DE ENTRENAMIENTO
+-- Creacion
+CREATE PROCEDURE sp_CrearSesionEntrenamiento (
+	@IdUsuario INT,
+	@IdRutina INT,
+	@FechaHoraInicio DATETIME,
+	@FechaHoraFin DATETIME
+)
+AS
+BEGIN
+	INSERT INTO SesionesEntrenamiento (IdUsuario, IdRutina, FechaHoraInicio, FechaHoraFin)
+	VALUES (@IdUsuario, @IdRutina, @FechaHoraInicio, @FechaHoraFin)
+END
+GO
+
+-- Modificacion
+CREATE PROCEDURE sp_ModificarSesionEntrenamiento (
+	@IdSesion INT,
+	@IdUsuario INT,
+	@IdRutina INT,
+	@FechaHoraInicio DATETIME,
+	@FechaHoraFin DATETIME
+)
+AS
+BEGIN
+	UPDATE SesionesEntrenamiento SET
+		IdUsuario = @IdUsuario,
+		IdRutina = @IdRutina,
+		FechaHoraInicio = @FechaHoraInicio,
+		FechaHoraFin = @FechaHoraFin
+	WHERE IdSesionesEntrenamiento = @IdSesion
+END
+GO
