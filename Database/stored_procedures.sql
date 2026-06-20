@@ -246,6 +246,7 @@ BEGIN
 END
 GO
 
+
 -- Obtener usuarios dependiendo del rol. Acepta la cadena 'TODOS' para obtener todos los usuarios sin filtro
 CREATE PROCEDURE sp_ObtenerUsuarios (@Rol VARCHAR(50))
 AS
@@ -318,3 +319,31 @@ BEGIN
 	WHERE IdSesionesEntrenamiento = @IdSesion
 END
 GO
+
+--Busca coincidencia de alguna instancia en una vista VW_Usuarios y trae todos los atributos 
+CREATE PROCEDURE sp_logueo
+	@Email VARCHAR(100),
+	@Pass VARCHAR(100)
+AS
+BEGIN
+SELECT IdUsuarios, 
+Nombre, 
+Apellido, 
+Email, 
+FechaNacimiento, 
+PesoCorporalKG, 
+IdRol, 
+[Rol Nombre], 
+FechaIngreso, 
+IdPlan, [Plan], 
+Activo, 
+PrecioMensual, 
+DuracionDias,
+IdEstado, Estado, 
+FechaInicio, 
+FechaVencimiento 
+FROM VW_Usuarios 
+WHERE Email = @Email AND Pass = @Pass
+END
+GO
+
