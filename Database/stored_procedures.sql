@@ -347,3 +347,86 @@ WHERE Email = @Email AND Pass = @Pass
 END
 GO
 
+CREATE PROCEDURE [dbo].[sp_Traer_Admins]
+AS
+  BEGIN
+    SELECT U.IdUsuarios, 
+    U.Nombre, 
+    U.Apellido, 
+    U.Email, 
+    U.FechaNacimiento AS [Fecha de Nacimiento],
+    U.IdRol,
+    R.Nombre AS [Rol],
+    U.FechaIngreso AS [Fecha de Ingreso],
+    U.Activo
+    FROM Usuarios U
+    INNER JOIN Roles R ON U.IdRol = R.IdRoles
+    WHERE U.IdRol = 1
+END;
+GO
+
+CREATE PROCEDURE [dbo].[sp_Traer_Entrenadores]
+AS
+  BEGIN
+    SELECT U.IdUsuarios, 
+    U.Nombre, 
+    U.Apellido, 
+    U.Email, 
+    U.FechaNacimiento AS [Fecha de Nacimiento],
+    U.IdRol,
+    R.Nombre AS [Rol],
+    U.FechaIngreso AS [Fecha de Ingreso],
+    U.Activo
+    FROM Usuarios U
+    INNER JOIN Roles R ON U.IdRol = R.IdRoles
+    WHERE U.IdRol = 4
+END;
+GO
+
+CREATE PROCEDURE [dbo].[sp_Traer_Recepcionistas]
+AS
+  BEGIN
+    SELECT U.IdUsuarios, 
+    U.Nombre, 
+    U.Apellido, 
+    U.Email, 
+    U.FechaNacimiento AS [Fecha de Nacimiento],
+    U.IdRol,
+    R.Nombre AS [Rol],
+    U.FechaIngreso AS [Fecha de Ingreso],
+    U.Activo
+    FROM Usuarios U
+    INNER JOIN Roles R ON U.IdRol = R.IdRoles
+    WHERE U.IdRol = 2
+END;
+GO
+
+ALTER PROCEDURE [dbo].[sp_Traer_Clientes]
+AS
+  BEGIN
+    SELECT U.IdUsuarios, 
+    U.Nombre, 
+    U.Apellido, 
+    U.Email, 
+    U.FechaNacimiento AS [Fecha de Nacimiento],
+    U.IdRol,
+    R.Nombre AS [Rol],
+    U.FechaIngreso AS [Fecha de Ingreso],
+    U.PesoCorporalKG,
+    S.IdEstado,
+    SE.Nombre,
+    U.Activo
+    FROM Usuarios U
+    LEFT JOIN Roles R ON U.IdRol = R.IdRoles
+    LEFT JOIN Suscripciones S ON S.IdUsuario = U.IdUsuarios
+    LEFT JOIN SuscripcionesEstados SE ON SE.IdSuscripcionesEstados = S.IdEstado
+    WHERE U.IdRol = 3
+END;
+GO
+
+CREATE PROCEDURE sp_Traer_Estados_De_Suscripciones
+AS 
+BEGIN
+SELECT IdSuscripcionesEstados, Nombre FROM SuscripcionesEstados
+END;
+GO
