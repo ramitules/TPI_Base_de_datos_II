@@ -57,7 +57,8 @@ GO
 
 -- EN PREPARACION (MIGUE)
 -- Trigger para validar que los socios esten activos antes de iniciar una sesion de entrenamiento.
--- Regla de negocio: Si el socio no tiene suscripcion activa no puede uniciar una sesion de entrenamiento.
+-- Regla de negocio: Si el socio no tiene suscripcion activa no
+ puede uniciar una sesion de entrenamiento.
 
 CREATE TRIGGER tr_ValidarSesionConSuscripcionActiva ON SesionesEntrenamiento
 AFTER INSERT
