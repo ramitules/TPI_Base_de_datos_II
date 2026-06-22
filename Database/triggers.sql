@@ -57,13 +57,37 @@ GO
 
 -- EN PREPARACION (MIGUE)
 -- Trigger para validar que los socios esten activos antes de iniciar una sesion de entrenamiento.
+-- Regla de negocio: Si el socio no tiene suscripcion activa no puede uniciar una sesion de entrenamiento.
+
 CREATE TRIGGER tr_ValidarSesionConSuscripcionActiva ON SesionesEntrenamiento
 AFTER INSERT
 AS
 BEGIN
-    -- A realizar domingo 22
-END;
+    
+    --Declaro las variables que voy a usar
+
+    Declare @IdUsuario INT;
+    Declare @FechaInicio DATE;
+
+    --Capturo del Inserted
+
+    Select @IdUsuario = IdUsuario, @FechaInicio = CAST(FechaHoraInicio as DATE) FROM inserted;
+
+    --Chequeo si no existe
+
+    IF NOT EXISTS (
+    SELECT FROM Suscripciones
+    WHERE IdUsuario = @IdUsuario AND IdEstado = 1 AND FechaInicio <= @FechaInicio AND FechaVencimiento >= @FechaInicio)
+    BEGIN
+        RAISERROR('El Socio no posee la suscripcion activa. No puede iniciar sesion.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END;
 GO
+
+-- En preparacion (Migue)
+-- Trigger para gestionar las suscripciones y sus estados al realizar cambios
+
 
 -- EN PREPARACION (MIGUE)
 -- Trigger para validar que no se elija la misma rutina para el mismo socio el mismo dia.
@@ -74,3 +98,7 @@ BEGIN
     -- A realizar domingo 22
 END;
 GO
+
+-- En preparacion (Migue)
+-- Trigger para realizar solo eliminaciones logicas, no fisicas.
+-- Chequear los atributos de la tabla.
