@@ -430,3 +430,100 @@ BEGIN
 SELECT IdSuscripcionesEstados, Nombre FROM SuscripcionesEstados
 END;
 GO
+
+
+CREATE PROCEDURE sp_RegistrarSerieCompletada
+(
+    @IdSesion INT,
+    @IdEjercicio INT,
+    @Peso SMALLINT,
+    @Repeticiones SMALLINT,
+    @RIR TINYINT
+)
+AS
+BEGIN
+
+    INSERT INTO SeriesCompletadas
+    (
+        IdSesion,
+        IdEjercicio,
+        PesoLevantadoKG,
+        RepeticionesLogradas,
+        RIR
+    )
+    VALUES
+    (
+        @IdSesion,
+        @IdEjercicio,
+        @Peso,
+        @Repeticiones,
+        @RIR
+    );
+
+END;
+GO
+
+CREATE PROCEDURE sp_RenovarSuscripcion
+(
+    @IdUsuario INT,
+    @IdPlan SMALLINT
+)
+AS
+BEGIN
+
+    DECLARE @DuracionDias INT;
+
+    SELECT @DuracionDias = DuracionDias
+    FROM Planes
+    WHERE IdPlanes = @IdPlan;
+
+    INSERT INTO Suscripciones
+    (
+        IdUsuario,
+        IdPlan,
+        IdEstado,
+        FechaInicio,
+        FechaVencimiento
+    )
+    VALUES
+    (
+        @IdUsuario,
+        @IdPlan,
+        1,
+        GETDATE(),
+        DATEADD(DAY, @DuracionDias, GETDATE())
+    );
+
+END;
+GO
+
+CREATE PROCEDURE sp_HistorialEntrenamientosUsuario
+(
+    @IdUsuario INT
+)
+AS
+BEGIN
+
+    SELECT
+        SE.IdSesionesEntrenamiento AS IdSesion,
+        R.Nombre AS Rutina,
+        SE.FechaHoraInicio,
+        SE.FechaHoraFin,
+        DATEDIFF
+        (
+            MINUTE,
+            SE.FechaHoraInicio,
+            SE.FechaHoraFin
+        ) AS DuracionMinutos
+
+    FROM SesionesEntrenamiento SE
+
+    LEFT JOIN Rutinas R
+        ON R.IdRutinas = SE.IdRutina
+
+    WHERE SE.IdUsuario = @IdUsuario
+
+    ORDER BY SE.FechaHoraInicio DESC;
+
+END;
+GO
