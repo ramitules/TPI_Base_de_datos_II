@@ -215,40 +215,7 @@ CREATE PROCEDURE sp_ModificarUsuario (
 	@PesoCorporal DECIMAL(5, 2),
 	@IdRol TINYINT,
 	@FechaIngreso DATETIME,
-	@IdUsuario INT,
-	@Activo BIT = 1
-)
-AS
-BEGIN
-	UPDATE Usuarios SET
-		Nombre = @Nombre,
-		Apellido = @Apellido,
-		Email = @Email,
-		FechaNacimiento = @FechaNacimiento,
-		PesoCorporalKG = @PesoCorporal,
-		IdRol = @IdRol,
-		FechaIngreso = @FechaIngreso,
-		Activo = @Activo
-	WHERE IdUsuarios = @IdUsuario
-END
-GO
-
--- Eliminar cliente (baja logica del usuario + borrado de sus dependencias)
-CREATE PROCEDURE sp_EliminarCliente (
-	@IdUsuario INTEGER
-)
-AS
-BEGIN
-	UPDATE Usuarios SET Activo = 0 WHERE IdUsuarios = @IdUsuario;
-	DELETE FROM SeriesCompletadas WHERE IdSesion IN (SELECT IdSesionesEntrenamiento FROM SesionesEntrenamiento WHERE IdUsuario = @IdUsuario);
-	DELETE FROM SesionesEntrenamiento WHERE IdUsuario = @IdUsuario;
-	DELETE FROM RutinaEjercicios WHERE IdRutina IN (SELECT IdRutinas FROM Rutinas WHERE IdUsuario = @IdUsuario);
-	DELETE FROM Rutinas WHERE IdUsuario = @IdUsuario;
-END
-GO
-
--- Crear suscripcion
-CREATE PROCEDURE sp_CrearSuscripcion (
+	@Activo BIT,
 	@IdUsuario INT,
 	@Pass VARCHAR(150)
 )
@@ -277,6 +244,19 @@ BEGIN
 	BEGIN CATCH
 		IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 	END CATCH
+END
+
+-- Eliminar cliente (baja logica del usuario + borrado de sus dependencias)
+CREATE PROCEDURE sp_EliminarCliente (
+	@IdUsuario INTEGER
+)
+AS
+BEGIN
+	UPDATE Usuarios SET Activo = 0 WHERE IdUsuarios = @IdUsuario;
+	DELETE FROM SeriesCompletadas WHERE IdSesion IN (SELECT IdSesionesEntrenamiento FROM SesionesEntrenamiento WHERE IdUsuario = @IdUsuario);
+	DELETE FROM SesionesEntrenamiento WHERE IdUsuario = @IdUsuario;
+	DELETE FROM RutinaEjercicios WHERE IdRutina IN (SELECT IdRutinas FROM Rutinas WHERE IdUsuario = @IdUsuario);
+	DELETE FROM Rutinas WHERE IdUsuario = @IdUsuario;
 END
 GO
 
