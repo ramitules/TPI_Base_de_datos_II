@@ -57,33 +57,33 @@ GO
 
 -- EN PREPARACION (MIGUE)
 -- Trigger para validar que los socios esten activos antes de iniciar una sesion de entrenamiento.
--- Regla de negocio: Si el socio no tiene suscripcion activa no
- puede uniciar una sesion de entrenamiento.
+-- Regla de negocio: Si el socio no tiene suscripcion activa no puede uniciar una sesion de entrenamiento.
 
 CREATE TRIGGER tr_ValidarSesionConSuscripcionActiva ON SesionesEntrenamiento
-AFTER INSERT
+INSTEAD OF INSERT
 AS
 BEGIN
-    
-    --Declaro las variables que voy a usar
-
     Declare @IdUsuario INT;
-    Declare @FechaInicio DATE;
+    Declare @IdRutina INT;
+    Declare @FechaHoraInicio DATETIME;
+    Declare @FechaHoraFin DATETIME;
 
     --Capturo del Inserted
 
-    Select @IdUsuario = IdUsuario, @FechaInicio = CAST(FechaHoraInicio as DATE) FROM inserted;
+    Select @IdUsuario=IdUsuario, @IdRutina=IdRutina, @FechaHoraInicio=FechaHoraInicio, @FechaHoraFin=FechaHoraFin FROM inserted;
 
     --Chequeo si no existe
 
-    IF NOT EXISTS (
-    SELECT FROM Suscripciones
-    WHERE IdUsuario = @IdUsuario AND IdEstado = 1 AND FechaInicio <= @FechaInicio AND FechaVencimiento >= @FechaInicio)
+    IF (dbo.fn_VerificarSuscripcionActiva(@IdUsuario) = 1)
+    BEGIN
+        EXEC sp_CrearSesionEntrenamiento @IdUsuario, @IdRutina, @FechaHoraInicio, @FechaHoraFin
+    END
+    ELSE
     BEGIN
         RAISERROR('El Socio no posee la suscripcion activa. No puede iniciar sesion.', 16, 1);
         ROLLBACK TRANSACTION;
-        RETURN;
-    END;
+    END
+END;
 GO
 
 -- En preparacion (Migue)
@@ -92,6 +92,7 @@ GO
 
 -- EN PREPARACION (MIGUE)
 -- Trigger para validar que no se elija la misma rutina para el mismo socio el mismo dia.
+
 CREATE TRIGGER tr_ValidarRutinaMismoDia ON Rutinas
 AFTER INSERT, UPDATE
 AS
@@ -103,3 +104,29 @@ GO
 -- En preparacion (Migue)
 -- Trigger para realizar solo eliminaciones logicas, no fisicas.
 -- Chequear los atributos de la tabla.
+
+Create TRIGGER tr_DesactivacionLogicaUsuarios on Usuarios
+INSTEAD OF DELETE
+AS
+begin  
+    -- Usar in por si se elimina mas de una fila (no declarar variable )
+    update Usuarios Set Activo = 0 
+    where IdUsuarios in (Select IdUsuarios from Deleted) and activo = 1;
+end;
+
+
+-- En preparacion (Migue)
+-- Trigger para realizar solo eliminaciones logicas, no fisicas.
+-- Negocio: Se puede cancelar una Suscripcion vencida tambien, chequear si una activa pendiente.
+
+Create Trigger tr_DesactivacionLogicaSuscripciones on Suscripciones
+Instead of DELETE
+as
+BEGIN
+
+    update Suscripciones set IdEstado = 3 
+    where IdSuscripciones in (select IdSuscripciones from deleted) and IdEstado <> 3;
+end;
+
+
+ 
