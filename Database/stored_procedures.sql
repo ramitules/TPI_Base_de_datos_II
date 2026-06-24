@@ -93,6 +93,7 @@ BEGIN
 		RE.OrdenEjercicio       AS OrdenEjercicio,
 		E.IdEjercicios          AS IdEjercicio,
 		E.Nombre                AS NombreEjercicio,
+		E.LinkExplicacion       AS LinkExplicacion,
 		GM.IdGruposMusculares   AS IdGrupoMuscular,
 		GM.Nombre               AS NombreGrupoMuscular
 	FROM RutinaEjercicios RE
@@ -214,7 +215,40 @@ CREATE PROCEDURE sp_ModificarUsuario (
 	@PesoCorporal DECIMAL(5, 2),
 	@IdRol TINYINT,
 	@FechaIngreso DATETIME,
-	@Activo BIT,
+	@IdUsuario INT,
+	@Activo BIT = 1
+)
+AS
+BEGIN
+	UPDATE Usuarios SET
+		Nombre = @Nombre,
+		Apellido = @Apellido,
+		Email = @Email,
+		FechaNacimiento = @FechaNacimiento,
+		PesoCorporalKG = @PesoCorporal,
+		IdRol = @IdRol,
+		FechaIngreso = @FechaIngreso,
+		Activo = @Activo
+	WHERE IdUsuarios = @IdUsuario
+END
+GO
+
+-- Eliminar cliente (baja logica del usuario + borrado de sus dependencias)
+CREATE PROCEDURE sp_EliminarCliente (
+	@IdUsuario INTEGER
+)
+AS
+BEGIN
+	UPDATE Usuarios SET Activo = 0 WHERE IdUsuarios = @IdUsuario;
+	DELETE FROM SeriesCompletadas WHERE IdSesion IN (SELECT IdSesionesEntrenamiento FROM SesionesEntrenamiento WHERE IdUsuario = @IdUsuario);
+	DELETE FROM SesionesEntrenamiento WHERE IdUsuario = @IdUsuario;
+	DELETE FROM RutinaEjercicios WHERE IdRutina IN (SELECT IdRutinas FROM Rutinas WHERE IdUsuario = @IdUsuario);
+	DELETE FROM Rutinas WHERE IdUsuario = @IdUsuario;
+END
+GO
+
+-- Crear suscripcion
+CREATE PROCEDURE sp_CrearSuscripcion (
 	@IdUsuario INT,
 	@Pass VARCHAR(150)
 )
@@ -245,7 +279,6 @@ BEGIN
 	END CATCH
 END
 GO
-
 
 -- Obtener usuarios dependiendo del rol. Acepta la cadena 'TODOS' para obtener todos los usuarios sin filtro
 CREATE PROCEDURE sp_ObtenerUsuarios (@Rol VARCHAR(50))
@@ -317,6 +350,66 @@ BEGIN
 		FechaHoraInicio = @FechaHoraInicio,
 		FechaHoraFin = @FechaHoraFin
 	WHERE IdSesionesEntrenamiento = @IdSesion
+END
+GO
+
+-- SERIES COMPLETADAS
+-- Creacion (se inserta una fila por cada serie que el cliente completa durante la sesion)
+CREATE PROCEDURE sp_CrearSerieCompletada (
+	@IdSesion INT,
+	@IdEjercicio INT,
+	@PesoLevantadoKG SMALLINT,
+	@RepeticionesLogradas SMALLINT,
+	@RIR TINYINT,
+	@EsRecordPersonal BIT
+)
+AS
+BEGIN
+	INSERT INTO SeriesCompletadas (IdSesion, IdEjercicio, PesoLevantadoKG, RepeticionesLogradas, RIR, EsRecordPersonal)
+	VALUES (@IdSesion, @IdEjercicio, @PesoLevantadoKG, @RepeticionesLogradas, @RIR, @EsRecordPersonal)
+END
+GO
+
+-- Obtener todas las sesiones de un cliente, con el nombre de la rutina y la cantidad de series registradas.
+-- Liviano: una fila por sesion (la metadata). Las series se cargan aparte y bajo demanda.
+CREATE PROCEDURE sp_SesionesDeCliente (@IdUsuario INT)
+AS
+BEGIN
+	SELECT
+		SE.IdSesionesEntrenamiento	AS IdSesion,
+		SE.FechaHoraInicio			AS FechaHoraInicio,
+		SE.FechaHoraFin				AS FechaHoraFin,
+		SE.IdRutina					AS IdRutina,
+		R.Nombre					AS NombreRutina,
+		(SELECT COUNT(*) FROM SeriesCompletadas SC WHERE SC.IdSesion = SE.IdSesionesEntrenamiento) AS CantidadSeries
+	FROM SesionesEntrenamiento SE
+	LEFT JOIN Rutinas R
+		ON SE.IdRutina = R.IdRutinas
+	WHERE SE.IdUsuario = @IdUsuario
+	ORDER BY SE.FechaHoraInicio DESC
+END
+GO
+
+-- Obtener las series completadas de una sesion, con el ejercicio y su grupo muscular.
+-- Ordenadas por nombre de ejercicio para que el agrupado quede contiguo.
+CREATE PROCEDURE sp_SeriesDeSesionAgrupadas (@IdSesion INT)
+AS
+BEGIN
+	SELECT
+		E.IdEjercicios			AS IdEjercicio,
+		E.Nombre				AS NombreEjercicio,
+		GM.Nombre				AS NombreGrupoMuscular,
+		SC.PesoLevantadoKG		AS PesoLevantadoKG,
+		SC.RepeticionesLogradas	AS RepeticionesLogradas,
+		SC.RIR					AS RIR,
+		SC.EsRecordPersonal		AS EsRecordPersonal
+	FROM SeriesCompletadas SC
+	INNER JOIN Ejercicios E
+		ON SC.IdEjercicio = E.IdEjercicios
+	LEFT JOIN GruposMusculares GM
+		ON E.IdGrupoMuscular = GM.IdGruposMusculares
+	WHERE SC.IdSesion = @IdSesion
+	ORDER BY E.Nombre, SC.IdSeriesCompletadas
 END
 GO
 
