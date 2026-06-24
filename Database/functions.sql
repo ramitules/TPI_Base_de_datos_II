@@ -1,4 +1,4 @@
-USE TPI_Base_de_datos_II
+USE GestionGimnasio
 GO
 
 CREATE FUNCTION fn_ejemplo ()
@@ -21,3 +21,5 @@ BEGIN
     RETURN 1;
 END;
 GO
+
+CREATE FUNCTION fn_
