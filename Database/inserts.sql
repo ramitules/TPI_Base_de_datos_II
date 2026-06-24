@@ -82,38 +82,38 @@ GO
 
 INSERT INTO Ejercicios (Nombre, IdGrupoMuscular)
 VALUES 
-('Press de Banca con Barra', 1),
-('Press Inclinado con Mancuernas', 1),
-('Aperturas en Polea Alta (Cruces)', 1),
-('Press Declinado con Barra', 1),
-('Fondos para Pecho', 1),
+('Press de Banca con Barra', 1, 'https://www.simplyfitness.com/es/pages/barbell-bench-press'),
+('Press Inclinado con Mancuernas', 1, 'https://www.simplyfitness.com/es/pages/incline-dumbbell-bench-press'),
+('Aperturas en Peck Deck', 1, 'https://www.simplyfitness.com/es/pages/peck-deck'),
+('Press Declinado con Barra', 1, 'https://www.simplyfitness.com/es/pages/barbell-declined-bench-press'),
+('Fondos para Pecho', 1, 'https://www.simplyfitness.com/es/pages/'),
 
-('Dominadas Pronas', 2),
-('Remo con Barra', 2),
-('Jalón al Pecho en Polea', 2),
-('Remo en Máquina', 2),
-('Pullover en Polea', 2),
+('Dominadas Pronas', 2, 'https://www.simplyfitness.com/es/pages/pull-up'),
+('Remo con Barra', 2, 'https://www.simplyfitness.com/es/pages/barbell-row'),
+('Jalón al Pecho en Polea', 2, 'https://www.simplyfitness.com/es/pages/wide-grip-pulldown'),
+('Remo en Máquina', 2, 'https://www.simplyfitness.com/es/pages/seated-cable-row'),
+('Pullover en Polea', 2, 'https://www.simplyfitness.com/es/pages/barbell-pullover'),
 
-('Sentadilla Libre con Barra', 3),
-('Prensa de Piernas 45 Grados', 3),
-('Sillón de Extensiones de Cuádriceps', 3),
-('Peso Muerto Rumano con Mancuernas', 3),
-('Elevación de Gemelos de Pie', 3),
+('Sentadilla Libre con Barra', 3, 'https://www.simplyfitness.com/es/pages/squat'),
+('Prensa de Piernas 45 Grados', 3, 'https://www.simplyfitness.com/es/pages/leg-press'),
+('Sillón de Extensiones de Cuádriceps', 3, 'https://www.simplyfitness.com/es/pages/leg-extension'),
+('Peso Muerto Rumano con Mancuernas', 3, 'https://www.simplyfitness.com/es/pages/dumbbell-stiff-leg-deadlift'),
+('Elevación de Gemelos de Pie', 3, 'https://www.simplyfitness.com/es/pages/standing-calf-raise'),
 
-('Press Militar con Barra', 4),
-('Vuelos Laterales con Mancuernas', 4),
-('Pájaros en Polea (Deltoides Posterior)', 4),
-('Elevaciones Frontales con Mancuernas', 4),
+('Press Militar con Barra', 4, 'https://www.simplyfitness.com/es/pages/barbell-push-press'),
+('Vuelos Laterales con Mancuernas', 4, 'https://www.simplyfitness.com/es/pages/dumbbell-lateral-raise'),
+('Pájaros en Polea (Deltoides Posterior)', 4, 'https://www.simplyfitness.com/es/pages/bent-over-lateral-raise'),
+('Elevaciones Frontales con Mancuernas', 4, 'https://www.simplyfitness.com/es/pages/dumbbell-front-raise'),
 
-('Curl de Bíceps con Barra W', 5),
-('Curl de Bíceps en Banco Scott', 5),
-('Extensiones de Tríceps en Polea Alta', 5),
-('Fondos en Paralelas para Tríceps', 5),
-('Curl Martillo', 5),
-('Press Francés', 5),
+('Curl de Bíceps con Barra W', 5, 'https://www.simplyfitness.com/es/pages/ez-barbell-curl'),
+('Curl de Bíceps en Banco Scott', 5, 'https://www.simplyfitness.com/es/pages/ez-barbell-preacher-curl'),
+('Extensiones de Tríceps en Polea Alta', 5, 'https://www.simplyfitness.com/es/pages/triceps-pressdown'),
+('Fondos en Paralelas para Tríceps', 5, 'https://www.simplyfitness.com/es/pages/parallel-dip-bar'),
+('Curl Martillo', 5, 'https://www.simplyfitness.com/es/pages/hammer-curl'),
+('Press Francés', 5, 'https://www.simplyfitness.com/es/pages/seated-barbell-french-press'),
 
-('Plancha Abdominal Isométrica', 6),
-('Elevaciones de Piernas Colgado', 6);
+('Plancha Abdominal Isométrica', 6, 'https://www.simplyfitness.com/es/pages/plank'),
+('Elevaciones de Piernas Colgado', 6, 'https://www.simplyfitness.com/es/pages/hanging-leg-raise');
 GO
 
 INSERT INTO Rutinas (Nombre, IdUsuario, FechaCreacion, Dia, Activo)
