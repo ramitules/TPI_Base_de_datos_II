@@ -475,7 +475,7 @@ AS
 END;
 GO
 
-ALTER PROCEDURE [dbo].[sp_Traer_Clientes]
+CREATE PROCEDURE [dbo].[sp_Traer_Clientes]
 AS
   BEGIN
     SELECT U.IdUsuarios, 
@@ -599,5 +599,20 @@ BEGIN
 
     ORDER BY SE.FechaHoraInicio DESC;
 
+END;
+GO
+
+CREATE PROCEDURE sp_Traer_Grupos_Musculares
+AS
+BEGIN
+SELECT IdGruposMusculares, Nombre FROM GruposMusculares
+END;
+GO
+
+
+CREATE PROCEDURE sp_Traer_Planes
+AS
+BEGIN
+SELECT IdPlanes, Nombre, PrecioMensual, DuracionDias FROM Planes
 END;
 GO
