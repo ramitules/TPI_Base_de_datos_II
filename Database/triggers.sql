@@ -72,7 +72,7 @@ BEGIN
 
     Select @IdUsuario=IdUsuario, @IdRutina=IdRutina, @FechaHoraInicio=FechaHoraInicio, @FechaHoraFin=FechaHoraFin FROM inserted;
 
-    --Chequeo si no existe
+    --Chequeo si existe
 
     IF (dbo.fn_VerificarSuscripcionActiva(@IdUsuario) = 1)
     BEGIN
@@ -86,18 +86,38 @@ BEGIN
 END;
 GO
 
--- En preparacion (Migue)
--- Trigger para gestionar las suscripciones y sus estados al realizar cambios
-
-
--- EN PREPARACION (MIGUE)
--- Trigger para validar que no se elija la misma rutina para el mismo socio el mismo dia.
-
-CREATE TRIGGER tr_ValidarRutinaMismoDia ON Rutinas
-AFTER INSERT, UPDATE
+CREATE TRIGGER tr_SoloClientesSuscripcion on Suscripciones
+INSTEAD OF INSERT, UPDATE
 AS
 BEGIN
-    -- A realizar domingo 22
+
+    DECLARE @IdUsuario INT;
+    DECLARE @IdPlan INT;
+    DECLARE @IdEstado INT;
+    DECLARE @FechaInicio DATE;
+    DECLARE @FechaVencimiento DATE;
+
+    SELECT @IdUsuario = IdUsuario, 
+        @IdPlan = IdPlan,
+        @IdEstado = IdEstado,
+        @FechaInicio = FechaInicio,
+        @FechaVencimiento = FechaVencimiento
+        from inserted;
+
+    DECLARE @IdRol INT;
+
+    SELECT @IdRol = IdRol from Usuarios WHERE IdUsuario=@IdUsuario;
+
+    IF (@IdRol = 3)
+        BEGIN
+            EXEC sp_CrearSuscripcion @IdUsuario, @IdPlan, @IdEstado, @FechaInicio, @FechaVencimiento
+        END;
+    ELSE
+        BEGIN
+            RAISERROR('El Usuario no posee el Rol de Cliente para realizar una Suscripcion.', 16, 1);
+            RETURN
+        END;
+
 END;
 GO
 
@@ -113,6 +133,7 @@ begin
     update Usuarios Set Activo = 0 
     where IdUsuarios in (Select IdUsuarios from Deleted) and activo = 1;
 end;
+GO
 
 
 -- En preparacion (Migue)
@@ -127,6 +148,7 @@ BEGIN
     update Suscripciones set IdEstado = 3 
     where IdSuscripciones in (select IdSuscripciones from deleted) and IdEstado <> 3;
 end;
+GO
 
 
  
