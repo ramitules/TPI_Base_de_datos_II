@@ -33,10 +33,10 @@ BEGIN
         END
     ELSE
         BEGIN
-            set @diasRestantes = 0;
+            set @resultadodiasRestantes = 0;
         END
 
-    RETURN @diasRestantes;
+    RETURN @resultadoDiasRestantes;
 END;
 GO
 
@@ -54,9 +54,9 @@ BEGIN
         and getdate() BETWEEN FechaInicio and FechaVencimiento;
 
     if (@resultadoBusqueda >= 1)
-        SELECT @resultado = 1
+        SET @resultado = 1
     ELSE 
-        SELECT @resultado = 0;
+        SET @resultado = 0;
 
     return @resultado
 END
@@ -87,7 +87,7 @@ BEGIN
             Select @CorreccionAños = 0
         END    
 
-    SELECT @ResultadoEdad = @ResultadoEdad - @CorreccionAños
+    SET @ResultadoEdad = @ResultadoEdad - @CorreccionAños
 
     RETURN @ResultadoEdad
 END
