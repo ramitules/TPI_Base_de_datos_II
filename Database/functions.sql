@@ -92,3 +92,46 @@ BEGIN
     RETURN @ResultadoEdad
 END
 GO
+
+--  Funci�n que devuelve la cantidad de sesiones de entrenamiento registradas por un usuario.
+CREATE FUNCTION fn_CantidadEntrenamientosUsuario
+(
+    @IdUsuario INT
+)
+RETURNS INT
+AS
+BEGIN
+
+    DECLARE @Cantidad INT;
+
+    SELECT
+        @Cantidad = COUNT(*)
+    FROM SesionesEntrenamiento
+    WHERE IdUsuario = @IdUsuario;
+
+    RETURN @Cantidad;
+
+END;
+GO
+
+
+--  Funci�n que devuelve la cantidad total de minutos entrenados por un usuario en todas sus sesiones. 
+CREATE FUNCTION fn_MinutosEntrenadosUsuario
+(
+    @IdUsuario INT
+)
+RETURNS INT
+AS
+BEGIN
+
+    DECLARE @Minutos INT;
+
+    SELECT @Minutos =
+        SUM(DATEDIFF(MINUTE, FechaHoraInicio, FechaHoraFin))
+    FROM SesionesEntrenamiento
+    WHERE IdUsuario = @IdUsuario;
+
+    RETURN ISNULL(@Minutos, 0);
+
+END;
+GO

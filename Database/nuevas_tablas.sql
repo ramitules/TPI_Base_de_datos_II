@@ -70,9 +70,12 @@ GO
 CREATE TABLE Ejercicios (  -- Un catalogo estandarizado de movimientos
 	IdEjercicios	INTEGER NOT NULL IDENTITY(1,1),
 	Nombre 			NVARCHAR(200) NOT NULL,
-	IdGrupoMuscular	TINYINT
+	IdGrupoMuscular	TINYINT,
+	LinkExplicacion	NVARCHAR(255)  -- Link a la pagina que explica como realizar el ejercicio
 	PRIMARY KEY (IdEjercicios),
-	FOREIGN KEY(IdGrupoMuscular) REFERENCES GruposMusculares(IdGruposMusculares)
+	FOREIGN KEY(IdGrupoMuscular) REFERENCES GruposMusculares(IdGruposMusculares),
+	CONSTRAINT CK_Ejercicios_LinkExplicacion
+		CHECK (LinkExplicacion LIKE 'https://www.simplyfitness.com/es/pages/%')
 );
 GO
 
