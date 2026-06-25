@@ -81,7 +81,6 @@ BEGIN
     ELSE
     BEGIN
         RAISERROR('El Socio no posee la suscripcion activa. No puede iniciar sesion.', 16, 1);
-        ROLLBACK TRANSACTION;
     END
 END;
 GO
