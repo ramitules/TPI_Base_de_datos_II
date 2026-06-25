@@ -86,43 +86,29 @@ END;
 GO
 
 CREATE TRIGGER tr_SoloClientesSuscripcion on Suscripciones
-INSTEAD OF INSERT, UPDATE
+INSTEAD OF INSERT
 AS
 BEGIN
 
-    DECLARE @IdUsuario INT;
-    DECLARE @IdPlan INT;
-    DECLARE @IdEstado INT;
-    DECLARE @FechaInicio DATE;
-    DECLARE @FechaVencimiento DATE;
+    DECLARE @CantidadInvalidos INT;
 
-    SELECT @IdUsuario = IdUsuario, 
-        @IdPlan = IdPlan,
-        @IdEstado = IdEstado,
-        @FechaInicio = FechaInicio,
-        @FechaVencimiento = FechaVencimiento
-        from inserted;
+    SELECT @CantidadInvalidos = COUNT(*) FROM inserted i
+    INNER JOIN Usuarios u ON i.IdUsuario = u.IdUsuario
+    WHERE u.IdRol <> 3;
 
-    DECLARE @IdRol INT;
-
-    SELECT @IdRol = IdRol from Usuarios WHERE IdUsuario=@IdUsuario;
-
-    IF (@IdRol = 3)
-        BEGIN
-            EXEC sp_CrearSuscripcion @IdUsuario, @IdPlan, @IdEstado, @FechaInicio, @FechaVencimiento
-        END;
+    IF (@CantidadInvalidos > 0)
+    BEGIN
+        RAISERROR('Uno o más usuarios en el lote no poseen el Rol de Cliente para realizar una Suscripcion.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
     ELSE
-        BEGIN
-            RAISERROR('El Usuario no posee el Rol de Cliente para realizar una Suscripcion.', 16, 1);
-            RETURN
-        END;
-
+    BEGIN
+        INSERT INTO Suscripciones (IdUsuario, IdPlan, IdEstado, FechaInicio, FechaVencimiento)
+        SELECT IdUsuario, IdPlan, IdEstado, FechaInicio, FechaVencimiento 
+        FROM inserted;
+    END
 END;
 GO
-
--- En preparacion (Migue)
--- Trigger para realizar solo eliminaciones logicas, no fisicas.
--- Chequear los atributos de la tabla.
 
 Create TRIGGER tr_DesactivacionLogicaUsuarios on Usuarios
 INSTEAD OF DELETE
