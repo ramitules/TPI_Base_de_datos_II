@@ -139,3 +139,48 @@ CREATE TABLE AccesoUsuarios (  -- Guarda el codigo de usuario y su contraseña p
 );
 GO
 
+--Tablas de auditoria (Probando)
+--Modificacion y/o eliminacion de usuarios
+CREATE TABLE Auditoria_Usuarios(
+  IdAuditoria INT IDENTITY(1,1),
+  IdUsuarioAfectado INT,
+  Accion VARCHAR(10),
+  DatosAnteriores VARCHAR(MAX),
+  DatosNuevos VARCHAR(MAX),
+  IdUsuarioApp INT NULL,
+  UsuarioBD VARCHAR(100) DEFAULT SUSER_SNAME(),
+  FechaHora DATETIME DEFAULT GETDATE(),
+  DireccionIP VARCHAR(45),
+
+  PRIMARY KEY(IdAuditoria)
+  );
+GO
+
+--Cambios de pass
+CREATE TABLE Auditoria_Pass(
+  IdHistorial INT IDENTITY(1,1),
+  IdUsuarioModificado INT,
+  Pass VARCHAR(255),
+  IdUsuarioModificador INT NULL,
+  UsuarioBD VARCHAR(100) DEFAULT SUSER_SNAME(),
+  FechaHora DATETIME DEFAULT GETDATE(),
+  DireccionIP VARCHAR(45),
+
+  PRIMARY KEY(IdHistorial)
+  );
+GO
+
+--Errores que vienen de la app
+CREATE TABLE Auditoria_Errores(
+  IdLog INT IDENTITY(1,1),
+  FechaHora DATETIME DEFAULT GETDATE(),
+  Modulo VARCHAR(100),
+  MensajeError VARCHAR(MAX),
+  StackTrace VARCHAR(MAX),
+  IdUsuarioLogueado INT NULL,
+  UsuarioBD VARCHAR(100) DEFAULT SUSER_SNAME(),
+  DatosEntrada VARCHAR(MAX),
+
+  PRIMARY KEY(IdLog)
+  );
+GO
