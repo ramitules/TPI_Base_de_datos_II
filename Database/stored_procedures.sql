@@ -281,22 +281,44 @@ END
 GO
 
 -- RECORDS
--- Obtener records personales del usuario
+-- Obtener records personales del usuario: una fila por ejercicio = la serie record de mayor peso
+-- (en caso de empate, la mas reciente). Filtra por el usuario dueño de la sesion.
 CREATE PROCEDURE sp_RecordsPersonales (@ID INTEGER)
 AS
 BEGIN
+	WITH RecordsRankeados AS (
+		SELECT
+			SC.PesoLevantadoKG		as PesoKG,
+			SC.RepeticionesLogradas	as Repeticiones,
+			SE.FechaHoraInicio		as FechaRecord,
+			E.IdEjercicios			as IdEjercicio,
+			E.Nombre				as EjercicioNombre,
+			GM.IdGruposMusculares	as IdGrupoMuscular,
+			GM.Nombre				as GrupoMuscularNombre,
+			ROW_NUMBER() OVER (
+				PARTITION BY E.IdEjercicios
+				ORDER BY SC.PesoLevantadoKG DESC, SE.FechaHoraInicio DESC
+			) as rn
+		FROM SeriesCompletadas AS SC
+		INNER JOIN SesionesEntrenamiento AS SE
+			ON SE.IdSesionesEntrenamiento = SC.IdSesion
+		INNER JOIN Ejercicios as E
+			ON E.IdEjercicios = SC.IdEjercicio
+		LEFT JOIN GruposMusculares as GM
+			ON GM.IdGruposMusculares = E.IdGrupoMuscular
+		WHERE SE.IdUsuario = @ID AND SC.EsRecordPersonal = 1
+	)
 	SELECT
-		SC.PesoLevantadoKG		as PesoKG,
-		E.IdEjercicios			as IdEjercicio,
-		E.Nombre				as EjercicioNombre,
-		GM.IdGruposMusculares	as IdGrupoMuscular,
-		GM.Nombre				as GrupoMuscularNombre
-	FROM SeriesCompletadas AS SC
-	LEFT JOIN Ejercicios as E
-		ON E.IdEjercicios = SC.IdEjercicio
-	LEFT JOIN GruposMusculares as GM
-		ON GM.IdGruposMusculares = E.IdGrupoMuscular
-	WHERE EsRecordPersonal = 1
+		PesoKG,
+		Repeticiones,
+		FechaRecord,
+		IdEjercicio,
+		EjercicioNombre,
+		IdGrupoMuscular,
+		GrupoMuscularNombre
+	FROM RecordsRankeados
+	WHERE rn = 1
+	ORDER BY EjercicioNombre
 END
 GO
 
