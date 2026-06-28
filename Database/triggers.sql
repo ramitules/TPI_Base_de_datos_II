@@ -44,7 +44,8 @@ BEGIN
 
         SELECT @cantidadInvalidos = COUNT(*) 
         FROM inserted AS I
-        WHERE dbo.fn_VerificarSuscripcionActiva(I.IdUsuario) = 0
+        INNER JOIN Usuarios AS U ON I.IdUsuario = U.IdUsuarios
+        WHERE U.IdRol = 3 AND dbo.fn_VerificarSuscripcionActiva(I.IdUsuario) = 0
 
         IF (@cantidadInvalidos > 0)
         BEGIN
