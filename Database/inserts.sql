@@ -80,7 +80,7 @@ VALUES
 ('Antonella', 'Molina', 'anto.m@email.com', '2001-01-14', 52.80, 3, '2026-05-25 14:30:00', 1);
 GO
 
-INSERT INTO Ejercicios (Nombre, IdGrupoMuscular)
+INSERT INTO Ejercicios (Nombre, IdGrupoMuscular, LinkExplicacion)
 VALUES 
 ('Press de Banca con Barra', 1, 'https://www.simplyfitness.com/es/pages/barbell-bench-press'),
 ('Press Inclinado con Mancuernas', 1, 'https://www.simplyfitness.com/es/pages/incline-dumbbell-bench-press'),

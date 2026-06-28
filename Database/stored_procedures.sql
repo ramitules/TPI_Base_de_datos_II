@@ -281,22 +281,44 @@ END
 GO
 
 -- RECORDS
--- Obtener records personales del usuario
+-- Obtener records personales del usuario: una fila por ejercicio = la serie record de mayor peso
+-- (en caso de empate, la mas reciente). Filtra por el usuario dueño de la sesion.
 CREATE PROCEDURE sp_RecordsPersonales (@ID INTEGER)
 AS
 BEGIN
+	WITH RecordsRankeados AS (
+		SELECT
+			SC.PesoLevantadoKG		as PesoKG,
+			SC.RepeticionesLogradas	as Repeticiones,
+			SE.FechaHoraInicio		as FechaRecord,
+			E.IdEjercicios			as IdEjercicio,
+			E.Nombre				as EjercicioNombre,
+			GM.IdGruposMusculares	as IdGrupoMuscular,
+			GM.Nombre				as GrupoMuscularNombre,
+			ROW_NUMBER() OVER (
+				PARTITION BY E.IdEjercicios
+				ORDER BY SC.PesoLevantadoKG DESC, SE.FechaHoraInicio DESC
+			) as rn
+		FROM SeriesCompletadas AS SC
+		INNER JOIN SesionesEntrenamiento AS SE
+			ON SE.IdSesionesEntrenamiento = SC.IdSesion
+		INNER JOIN Ejercicios as E
+			ON E.IdEjercicios = SC.IdEjercicio
+		LEFT JOIN GruposMusculares as GM
+			ON GM.IdGruposMusculares = E.IdGrupoMuscular
+		WHERE SE.IdUsuario = @ID AND SC.EsRecordPersonal = 1
+	)
 	SELECT
-		SC.PesoLevantadoKG		as PesoKG,
-		E.IdEjercicios			as IdEjercicio,
-		E.Nombre				as EjercicioNombre,
-		GM.IdGruposMusculares	as IdGrupoMuscular,
-		GM.Nombre				as GrupoMuscularNombre
-	FROM SeriesCompletadas AS SC
-	LEFT JOIN Ejercicios as E
-		ON E.IdEjercicios = SC.IdEjercicio
-	LEFT JOIN GruposMusculares as GM
-		ON GM.IdGruposMusculares = E.IdGrupoMuscular
-	WHERE EsRecordPersonal = 1
+		PesoKG,
+		Repeticiones,
+		FechaRecord,
+		IdEjercicio,
+		EjercicioNombre,
+		IdGrupoMuscular,
+		GrupoMuscularNombre
+	FROM RecordsRankeados
+	WHERE rn = 1
+	ORDER BY EjercicioNombre
 END
 GO
 
@@ -614,5 +636,70 @@ CREATE PROCEDURE sp_Traer_Planes
 AS
 BEGIN
 SELECT IdPlanes, Nombre, PrecioMensual, DuracionDias FROM Planes
+END;
+GO
+
+CREATE PROCEDURE sp_Traer_Ejercicios
+AS
+BEGIN
+SELECT E.IdEjercicios, E.Nombre, E.IdGrupoMuscular, GM.Nombre AS GrupoMuscular, E.LinkExplicacion FROM Ejercicios E
+INNER JOIN GruposMusculares GM ON E.IdGrupoMuscular = GM.IdGruposMusculares
+END;
+GO
+
+
+--Sp de auditoria (Probando)
+--Sp de auditoria. Registra las modificaciones y las eliminaciones de la tabla Usuarios en la tabla Auditoria_Usuarios. En caso de corresponder tambien registra el cambio de Pass, y registro en Auditoria_Pass
+CREATE PROCEDURE sp_Registrar_Movimiento
+  @IdUsuarioModificador INT,
+  @IdUsuarioModificado INT,
+  @Nombre VARCHAR(50), 
+  @Apellido VARCHAR(50),
+  @Email VARCHAR(100),
+  @FechaNacimiento DATE, 
+  @PesoCorporalKG DECIMAL,
+  @IdRol INT,
+  @Activo BIT,
+  @Pass VARCHAR(100)
+AS
+BEGIN
+    DECLARE @DatosAnteriores VARCHAR(MAX); 
+    DECLARE @DatosNuevos VARCHAR(MAX);
+    DECLARE @DireccionIP VARCHAR(45); 
+  BEGIN TRY
+    BEGIN TRANSACTION
+        SET @DatosAnteriores = (SELECT * FROM Usuarios U WHERE U.IdUsuarios = @IdUsuarioModificado FOR JSON PATH);
+
+        UPDATE Usuarios SET 
+        Nombre = @Nombre,
+        Apellido = @Apellido,
+        Email = @Email,
+        FechaNacimiento =  @FechaNacimiento,
+        PesoCorporalKG = @PesoCorporalKG,
+        IdRol = @IdRol, 
+        Activo = @Activo
+        WHERE IdUsuarios = @IdUsuarioModificado;
+
+        SET @DatosNuevos = (SELECT * FROM Usuarios U WHERE U.IdUsuarios = @IdUsuarioModificado FOR JSON PATH);
+        SET @DireccionIP = (SELECT client_net_address FROM SYS.dm_exec_connections where session_id = @@spid);
+        INSERT INTO Auditoria_Usuarios (IdUsuarioAfectado, Accion, DatosAnteriores, DatosNuevos, IdUsuarioApp, FechaHora, DireccionIP)
+                VALUES(@IdUsuarioModificado, 'UPDATE', @DatosAnteriores, @DatosNuevos, @IdUsuarioModificador, GETDATE(), @DireccionIP);
+        IF @Pass IS NOT NULL AND @Pass != ''
+            BEGIN
+              UPDATE AccesoUsuarios SET
+                Pass = @Pass
+              WHERE IdUsuarios = @IdUsuarioModificado
+
+              INSERT INTO Auditoria_Pass (IdUsuarioModificado, Pass, IdUsuarioModificador, UsuarioBD, FechaHora, DireccionIP)
+                         VALUES (@IdUsuarioModificado, @Pass,@IdUsuarioModificador , NULL, GETDATE(), @DireccionIP)
+            END
+    COMMIT TRANSACTION
+  END TRY
+  BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION
+        INSERT INTO Auditoria_Errores (FechaHora, Modulo, MensajeError, StackTrace, IdUsuarioLogueado, DatosEntrada)
+                    VALUES(GETDATE(), 'Modificacion de Usuario', ERROR_MESSAGE(), (CAST(ERROR_NUMBER() AS VARCHAR(10)) + CAST(ERROR_LINE() AS VARCHAR(10)) +  CAST(ERROR_SEVERITY() AS VARCHAR(10))),@IdUsuarioModificador, ('IdModificado: ' + CAST(@IdUsuarioModificado AS VARCHAR(10))));
+        THROW;
+  END CATCH
 END;
 GO
