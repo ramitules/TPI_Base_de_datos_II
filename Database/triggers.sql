@@ -3,9 +3,6 @@ GO
 
 -- Trigger para detectar y actualizar el record personal luego de insertar una serie.
 -- Regla de negocio: Para el record personal se mide el peso levantado, en caso de empate se chequea las repeticiones.
--- Observaciones: En vez de buscar por la bandera vamos directo a los datos.
--- Realizamos un único UPDATE que resetea y marca récords
-
 
 CREATE TRIGGER dbo.tr_DetectarRecordPersonal 
 ON SeriesCompletadas
@@ -33,7 +30,6 @@ BEGIN
     WHERE SE.IdUsuario = SEI.IdUsuario;
 END;
 GO
-
 
 -- Trigger para validar que los socios esten activos antes de iniciar una sesion de entrenamiento.
 -- Regla de negocio: Si el socio no tiene suscripcion activa no puede uniciar una sesion de entrenamiento.
@@ -99,18 +95,34 @@ begin
 end;
 GO
 
--- En preparacion (Migue)
--- Trigger para realizar solo eliminaciones logicas, no fisicas.
--- Negocio: Se puede cancelar una Suscripcion vencida tambien, chequear si una activa pendiente.
+-- Trigger para realizar solo eliminaciones logicas (Cancela la suscripción).
+-- Negocio: Se puede cancelar cualquier tipo de suscripcion.
 
-Create Trigger tr_DesactivacionLogicaSuscripciones on Suscripciones
-Instead of DELETE
-as
+CREATE TRIGGER dbo.tr_DesactivacionLogicaSuscripciones 
+ON Suscripciones
+INSTEAD OF DELETE
+AS
 BEGIN
+    BEGIN TRY
+        -- Modificamos solo las que no están canceladas
+        UPDATE S
+        SET S.IdEstado = 3 
+        FROM Suscripciones AS S
+        WHERE S.IdSuscripciones IN (SELECT D.IdSuscripciones FROM deleted AS D) 
+          AND S.IdEstado <> 3;
 
-    update Suscripciones set IdEstado = 3 
-    where IdSuscripciones in (select IdSuscripciones from deleted) and IdEstado <> 3;
-end;
+        IF @@ROWCOUNT = 0
+        BEGIN
+            -- Error solo informativo (Severidad 10 no rompe las modificaciones)
+            RAISERROR('Aviso: Las suscripciones seleccionadas ya estaban desactivadas.', 10, 1);
+        END
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION; 
+        RAISERROR('Error al procesar la desactivación lógica: dbo.tr_DesactivacionLogicaSuscripciones 
+        ON Suscripciones INSTEAD OF DELETE', 16, 1);
+    END CATCH
+END;
 GO
 
 
