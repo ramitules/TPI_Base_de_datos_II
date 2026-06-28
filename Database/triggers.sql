@@ -1,46 +1,39 @@
 USE GestionGimnasio
 GO
 
--- EN PREPARACION (MIGUE)
--- Trigger para detectar un record personal y actualizar EsRecordPersonal.
--- Regla de negocio: Si el Peso levantado empata el Record para el ejercicio se verifica las repeticiones.
+-- Trigger para detectar y actualizar el record personal luego de insertar una serie.
+-- Regla de negocio: Para el record personal se mide el peso levantado, en caso de empate se chequea las repeticiones.
 -- Observaciones: En vez de buscar por la bandera vamos directo a los datos.
+-- Realizamos un único UPDATE que resetea y marca récords
 
 
-CREATE TRIGGER tr_DetectarRecordPersonal ON SeriesCompletadas
+CREATE TRIGGER dbo.tr_DetectarRecordPersonal 
+ON SeriesCompletadas
 AFTER INSERT 
 AS
 BEGIN
-    -- Primero seteamos los records en cero para los usuarios y ejercicios que estan en el inserted.
-
-    UPDATE SeriesCompletadas
-    SET SC.EsRecordPersonal = 0
-    FROM SeriesCompletadas SC
-        INNER JOIN SesionesEntrenamiento SE ON SC.IdSesion = SE.IdSesionesEntrenamiento
-        INNER JOIN inserted i ON SC.IdEjercicio = i.IdEjercicio
-        INNER JOIN SesionesEntrenamiento SEI ON i.IdSesion = SEI.IdSesionesEntrenamiento
-    WHERE SE.IdUsuario = SEI.IdUsuario 
-        AND SC.IdEjercicio = i.IdEjercicio
-        AND SC.EsRecordPersonal = 1;
-
-    
-    -- Segundo identificamos y marcamos de nuevo los récords
-    SET SC.EsRecordPersonal = 1
-    FROM SeriesCompletadas SC
-    INNER JOIN inserted i ON SC.IdSeriesCompletadas = i.IdSeriesCompletadas
-    INNER JOIN SesionesEntrenamiento SE ON i.IdSesion = SE.IdSesionesEntrenamiento
-    -- Intentamos unir con cualquier serie "mejor" del mismo usuario y ejercicio
-    LEFT JOIN SeriesCompletadas SC2 ON SC2.IdEjercicio = i.IdEjercicio
-        AND SC2.IdSeriesCompletadas <> i.IdSeriesCompletadas 
-        AND (
-            SC2.PesoLevantadoKG > i.PesoLevantadoKG 
-            OR (SC2.PesoLevantadoKG = i.PesoLevantadoKG AND SC2.RepeticionesLogradas >= i.RepeticionesLogradas)
-        )
-    LEFT JOIN SesionesEntrenamiento SE2 ON SC2.IdSesion = SE2.IdSesionesEntrenamiento
-        AND SE2.IdUsuario = SE.IdUsuario
-    WHERE SC2.IdSeriesCompletadas IS NULL; 
+    UPDATE SC 
+    SET SC.EsRecordPersonal = CASE 
+        WHEN SC.IdSeriesCompletadas IN (
+            SELECT TOP 1 WITH TIES SCR.IdSeriesCompletadas
+            FROM SeriesCompletadas AS SCR -- Series Completatas Ranking
+            INNER JOIN SesionesEntrenamiento AS SER ON SCR.IdSesion = SER.IdSesionesEntrenamiento
+                WHERE SER.IdUsuario = SE.IdUsuario AND SCR.IdEjercicio = SC.IdEjercicio
+                ORDER BY SCR.PesoLevantadoKG DESC, SCR.RepeticionesLogradas DESC
+        ) THEN 1
+        ELSE 0
+    END
+    FROM SeriesCompletadas AS SC
+    INNER JOIN SesionesEntrenamiento AS SE ON SC.IdSesion = SE.IdSesionesEntrenamiento
+    INNER JOIN (
+        SELECT DISTINCT IdEjercicio, IdSesion 
+        FROM inserted
+    ) AS I ON SC.IdEjercicio = I.IdEjercicio
+    INNER JOIN SesionesEntrenamiento AS SEI ON I.IdSesion = SEI.IdSesionesEntrenamiento
+    WHERE SE.IdUsuario = SEI.IdUsuario;
 END;
 GO
+
 
 -- Trigger para validar que los socios esten activos antes de iniciar una sesion de entrenamiento.
 -- Regla de negocio: Si el socio no tiene suscripcion activa no puede uniciar una sesion de entrenamiento.
@@ -105,7 +98,6 @@ begin
     where IdUsuarios in (Select IdUsuarios from Deleted) and activo = 1;
 end;
 GO
-
 
 -- En preparacion (Migue)
 -- Trigger para realizar solo eliminaciones logicas, no fisicas.
