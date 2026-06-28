@@ -209,3 +209,28 @@ IF APP_NAME() LIKE '%Management Studio%'
   END
 END;
 GO
+
+CREATE TRIGGER TR_SeriesCompletadas_Record
+ON SeriesCompletadas
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE SC
+       SET EsRecordPersonal = 1
+      FROM SeriesCompletadas SC
+      INNER JOIN inserted I
+              ON I.IdSeriesCompletadas = SC.IdSeriesCompletadas
+      INNER JOIN SesionesEntrenamiento SE
+              ON SE.IdSesionesEntrenamiento = SC.IdSesion
+     WHERE SC.PesoLevantadoKG > ISNULL((
+               SELECT MAX(SC2.PesoLevantadoKG)
+                 FROM SeriesCompletadas SC2
+                 INNER JOIN SesionesEntrenamiento SE2
+                         ON SE2.IdSesionesEntrenamiento = SC2.IdSesion
+                WHERE SE2.IdUsuario   = SE.IdUsuario
+                  AND SC2.IdEjercicio = SC.IdEjercicio
+                  AND SC2.IdSeriesCompletadas <> SC.IdSeriesCompletadas), 0);
+END
+GO
