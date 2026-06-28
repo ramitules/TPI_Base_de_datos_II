@@ -79,7 +79,7 @@ BEGIN
 
         SELECT @cantidadInvalidos = COUNT(*) 
         FROM inserted AS I
-        INNER JOIN Usuarios AS U ON I.IdUsuario = U.IdUsuario
+        INNER JOIN Usuarios AS U ON I.IdUsuario = U.IdUsuarios
         WHERE U.IdRol <> 3;
 
         IF (@cantidadInvalidos > 0)
@@ -210,6 +210,10 @@ IF APP_NAME() LIKE '%Management Studio%'
 END;
 GO
 
+
+-- Actualizar el registro que se acaba de insertar en la tabla SeriesCompletadas 
+-- en caso de detectar que la cantidad de kilogramos que el usuario pudo levantar
+-- es superior al máximo que se ha levantado en el pasado en el mismo ejercicio.
 CREATE TRIGGER TR_SeriesCompletadas_Record
 ON SeriesCompletadas
 AFTER INSERT
