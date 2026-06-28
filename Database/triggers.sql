@@ -60,6 +60,39 @@ BEGIN
 END;
 GO
 
+-- Trigger para verificar y suscribir solo a usuarios que tengan el rol de cliente
+
+CREATE TRIGGER dbo.tr_SoloClientesSuscripcion 
+ON Suscripciones
+INSTEAD OF INSERT
+AS
+BEGIN
+    BEGIN TRY
+        -- Validacion que detecta usuarios que no son clientes.
+        IF EXISTS (
+            SELECT * 
+            FROM inserted AS I
+            INNER JOIN Usuarios AS U ON I.IdUsuario = U.IdUsuario
+            WHERE U.IdRol <> 3
+        )
+        BEGIN
+            RAISERROR('Uno o más usuarios en el lote no poseen el Rol de Cliente para realizar una Suscripcion.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        INSERT INTO Suscripciones (IdUsuario, IdPlan, IdEstado, FechaInicio, FechaVencimiento)
+        SELECT I.IdUsuario, I.IdPlan, I.IdEstado, I.FechaInicio, I.FechaVencimiento 
+        FROM inserted AS I;
+
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION; 
+        RAISERROR('Error al procesar las altas de la suscripción: dbo.tr_SoloClientesSuscripcion .', 16, 1);
+    END CATCH 
+END;
+GO
+
 CREATE TRIGGER tr_SoloClientesSuscripcion on Suscripciones
 INSTEAD OF INSERT
 AS
@@ -85,15 +118,8 @@ BEGIN
 END;
 GO
 
-Create TRIGGER tr_DesactivacionLogicaUsuarios on Usuarios
-INSTEAD OF DELETE
-AS
-begin  
-    -- Usar in por si se elimina mas de una fila (no declarar variable )
-    update Usuarios Set Activo = 0 
-    where IdUsuarios in (Select IdUsuarios from Deleted) and activo = 1;
-end;
-GO
+-- Trigger para realizar solo eliminaciones logicas (Cancela la suscripción).
+-- Negocio: Se puede cancelar cualquier tipo de suscripcion.
 
 CREATE TRIGGER dbo.tr_DesactivacionLogicaUsuarios 
 ON Usuarios
