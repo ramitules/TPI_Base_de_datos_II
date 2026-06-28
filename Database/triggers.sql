@@ -95,6 +95,33 @@ begin
 end;
 GO
 
+CREATE TRIGGER dbo.tr_DesactivacionLogicaUsuarios 
+ON Usuarios
+INSTEAD OF DELETE
+AS
+BEGIN
+    BEGIN TRY
+        -- Modificamos solo los que están activos.
+        UPDATE U
+        SET U.Activo = 0 
+        FROM Usuarios AS U
+        WHERE U.IdUsuarios IN (SELECT D.IdUsuarios FROM deleted AS D) 
+          AND U.Activo = 1;
+
+        IF @@ROWCOUNT = 0
+        BEGIN
+            -- Error solo informativo (Severidad 10 no rompe las modificaciones)
+            RAISERROR('Aviso: Los usuarios seleccionados ya se encontraban desactivados.', 10, 1);
+        END
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION; 
+        RAISERROR('Error al procesar la desactivación lógica en Usuarios: dbo.tr_DesactivacionLogicaUsuarios 
+        ON Usuarios.', 16, 1);
+    END CATCH
+END;
+GO
+
 -- Trigger para realizar solo eliminaciones logicas (Cancela la suscripción).
 -- Negocio: Se puede cancelar cualquier tipo de suscripcion.
 
