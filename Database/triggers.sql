@@ -34,31 +34,37 @@ GO
 -- Trigger para validar que los socios esten activos antes de iniciar una sesion de entrenamiento.
 -- Regla de negocio: Si el socio no tiene suscripcion activa no puede uniciar una sesion de entrenamiento.
 
-CREATE TRIGGER tr_ValidarSesionConSuscripcionActiva ON SesionesEntrenamiento
+CREATE TRIGGER dbo.tr_ValidarSesionConSuscripcionActiva 
+ON SesionesEntrenamiento
 INSTEAD OF INSERT
 AS
 BEGIN
-    Declare @IdUsuario INT;
-    Declare @IdRutina INT;
-    Declare @FechaHoraInicio DATETIME;
-    Declare @FechaHoraFin DATETIME;
+    BEGIN TRY
+        DECLARE @cantidadInvalidos INT;
 
-    --Capturo del Inserted
+        SELECT @cantidadInvalidos = COUNT(*) 
+        FROM inserted AS I
+        WHERE dbo.fn_VerificarSuscripcionActiva(I.IdUsuario) = 0
 
-    Select @IdUsuario=IdUsuario, @IdRutina=IdRutina, @FechaHoraInicio=FechaHoraInicio, @FechaHoraFin=FechaHoraFin FROM inserted;
+        IF (@cantidadInvalidos > 0)
+        BEGIN
+            RAISERROR('Uno o más socios no poseen suscripción activa para iniciar una sesion de entrenamiento: tr_ValidarSesionConSuscripcionActiva ', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
 
-    --Chequeo si existe
+        INSERT INTO SesionesEntrenamiento (IdUsuario, IdRutina, FechaHoraInicio, FechaHoraFin)
+        SELECT I.IdUsuario, I.IdRutina, I.FechaHoraInicio, I.FechaHoraFin 
+        FROM inserted AS I;
 
-    IF (dbo.fn_VerificarSuscripcionActiva(@IdUsuario) = 1)
-    BEGIN
-        EXEC sp_CrearSesionEntrenamiento @IdUsuario, @IdRutina, @FechaHoraInicio, @FechaHoraFin
-    END
-    ELSE
-    BEGIN
-        RAISERROR('El Socio no posee la suscripcion activa. No puede iniciar sesion.', 16, 1);
-    END
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION; 
+        RAISERROR('Error al procesar el alta de la sesión de entrenamiento: tr_ValidarSesionConSuscripcionActiva .', 16, 1);
+    END CATCH
 END;
 GO
+
 
 -- Trigger para verificar y suscribir solo a usuarios que tengan el rol de cliente
 
@@ -69,12 +75,14 @@ AS
 BEGIN
     BEGIN TRY
         -- Validacion que detecta usuarios que no son clientes.
-        IF EXISTS (
-            SELECT * 
-            FROM inserted AS I
-            INNER JOIN Usuarios AS U ON I.IdUsuario = U.IdUsuario
-            WHERE U.IdRol <> 3
-        )
+        DECLARE @CantidadInvalidos INT;
+
+        SELECT @cantidadInvalidos = COUNT(*) 
+        FROM inserted AS I
+        INNER JOIN Usuarios AS U ON I.IdUsuario = U.IdUsuario
+        WHERE U.IdRol <> 3;
+
+        IF (@cantidadInvalidos > 0)
         BEGIN
             RAISERROR('Uno o más usuarios en el lote no poseen el Rol de Cliente para realizar una Suscripcion.', 16, 1);
             ROLLBACK TRANSACTION;
@@ -90,31 +98,6 @@ BEGIN
         ROLLBACK TRANSACTION; 
         RAISERROR('Error al procesar las altas de la suscripción: dbo.tr_SoloClientesSuscripcion .', 16, 1);
     END CATCH 
-END;
-GO
-
-CREATE TRIGGER tr_SoloClientesSuscripcion on Suscripciones
-INSTEAD OF INSERT
-AS
-BEGIN
-
-    DECLARE @CantidadInvalidos INT;
-
-    SELECT @CantidadInvalidos = COUNT(*) FROM inserted i
-    INNER JOIN Usuarios u ON i.IdUsuario = u.IdUsuario
-    WHERE u.IdRol <> 3;
-
-    IF (@CantidadInvalidos > 0)
-    BEGIN
-        RAISERROR('Uno o más usuarios en el lote no poseen el Rol de Cliente para realizar una Suscripcion.', 16, 1);
-        ROLLBACK TRANSACTION;
-    END
-    ELSE
-    BEGIN
-        INSERT INTO Suscripciones (IdUsuario, IdPlan, IdEstado, FechaInicio, FechaVencimiento)
-        SELECT IdUsuario, IdPlan, IdEstado, FechaInicio, FechaVencimiento 
-        FROM inserted;
-    END
 END;
 GO
 
