@@ -40,26 +40,33 @@ BEGIN
 END;
 GO
 
-CREATE FUNCTION fn_VerificarSuscripcionActiva(@IdUsuario INT)
+-- utilizacion en el trigger: dbo.tr_ValidarSesionConSuscripcionActiva 
+
+CREATE FUNCTION dbo.fn_VerificarSuscripcionActiva(@IdUsuario INT)
 RETURNS BIT
 AS
 BEGIN
-    DECLARE @resultadoBusqueda INT
-    DECLARE @resultado BIT
 
-    Select @resultadoBusqueda = COUNT (*) 
+    DECLARE @resultadoBusqueda INT;
+    DECLARE @resultado BIT;
+
+    SELECT @resultadoBusqueda = COUNT(*) 
     FROM Suscripciones 
-    where IdUsuario=@IdUsuario 
-        and IdEstado = 1 
-        and getdate() BETWEEN FechaInicio and FechaVencimiento;
+    WHERE IdUsuario = @IdUsuario 
+        AND IdEstado = 1 
+        AND GETDATE() BETWEEN FechaInicio AND FechaVencimiento;
 
-    if (@resultadoBusqueda >= 1)
-        SET @resultado = 1
+    IF (@resultadoBusqueda >= 1)
+        BEGIN
+            SET @resultado = 1;
+        END
     ELSE 
-        SET @resultado = 0;
+        BEGIN
+            SET @resultado = 0;
+        END;
 
-    return @resultado
-END
+    RETURN @resultado;
+END;
 GO
 
 CREATE FUNCTION fn_EdadUsuario(@FechaNacimiento DATE)
