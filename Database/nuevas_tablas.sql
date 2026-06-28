@@ -95,7 +95,7 @@ CREATE TABLE RutinaEjercicios (  -- Asigna los ejercicios específicos a una pla
 	IdRutinasEjercicios		INTEGER NOT NULL IDENTITY(1,1),
 	IdEjercicio 			INTEGER NOT NULL,
 	IdRutina				INTEGER NOT NULL,
-	ObjetivoKG				INTEGER DEFAULT 1,
+	ObjetivoKG				DECIMAL(6, 2) DEFAULT 1,
 	ObjetivoSeries 			SMALLINT DEFAULT 1,
 	ObjetivoRepeticiones 	SMALLINT DEFAULT 1,
 	OrdenEjercicio 			TINYINT DEFAULT 1 --<-- Si debe ser el primer ejercicio de la rutina del dia, el ultimo, etc.
@@ -122,7 +122,7 @@ CREATE TABLE SeriesCompletadas (  -- Guarda cada serie efectiva que hace el usua
 	IdSeriesCompletadas		INTEGER NOT NULL IDENTITY(1,1),
 	IdSesion 				INTEGER NOT NULL,
 	IdEjercicio 			INTEGER NOT NULL,
-	PesoLevantadoKG 		SMALLINT NOT NULL DEFAULT 0,
+	PesoLevantadoKG 		DECIMAL(6, 2) NOT NULL DEFAULT 0,
 	RepeticionesLogradas 	SMALLINT NOT NULL DEFAULT 0,
 	RIR 					TINYINT,  --<-- Reps In Reserve, o repeticiones de reserva que le quedaban antes de llegar al fallo.
 	EsRecordPersonal 		BIT NOT NULL DEFAULT 0
