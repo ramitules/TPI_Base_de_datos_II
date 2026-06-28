@@ -147,9 +147,22 @@ GO
 Create PROCEDURE SP_Suscripciones_actualizar_estado_vencidas
 AS
 BEGIN 
+	SET NOCOUNT ON;
+	-- Vencidas
     UPDATE Suscripciones
     SET IdEstado = 2
-    WHERE FechaVencimiento < GETDATE() AND IdEstado = 1;
+    WHERE FechaVencimiento < CAST(GETDATE() as DATE) AND IdEstado = 1;
+
+	-- Activar pendientes
+	UPDATE S
+	SET IdEstado = 1
+	FROM Suscripciones S
+	WHERE S.IdEstado = 4
+	AND S.FechaInicio <= CAST(GETDATE() AS DATE)
+	AND S.FechaVencimiento >= CAST(GETDATE() AS DATE)
+	AND NOT EXISTS
+		(SELECT 1 FROM Suscripciones A WHERE A.IdUsuario = S.IdUsuario AND A.IdEstado = 1);
+
 END;
 GO
 
@@ -361,7 +374,7 @@ GO
 CREATE PROCEDURE sp_CrearSerieCompletada (
 	@IdSesion INT,
 	@IdEjercicio INT,
-	@PesoLevantadoKG SMALLINT,
+	@PesoLevantadoKG DECIMAL(6, 2),
 	@RepeticionesLogradas SMALLINT,
 	@RIR TINYINT,
 	@EsRecordPersonal BIT
