@@ -16,14 +16,14 @@ GO
 
 CREATE TABLE SuscripcionesEstados (  -- Activa, vencida, etc.
 	IdSuscripcionesEstados	TINYINT NOT NULL IDENTITY(1,1),
-	Nombre 					NVARCHAR(50) NOT NULL
+	Nombre 					NVARCHAR(50) NOT NULL,
 	PRIMARY KEY (IdSuscripcionesEstados)
 );
 GO
 
 CREATE TABLE Roles (  -- Entrenador, Administrativo, etc.
 	IdRoles		TINYINT NOT NULL IDENTITY(1,1),
-	Nombre 		NVARCHAR(50) NOT NULL
+	Nombre 		NVARCHAR(50) NOT NULL,
 	PRIMARY KEY (IdRoles)
 );
 GO
@@ -32,7 +32,7 @@ CREATE TABLE Planes (  -- Los tipos de suscripcion que ofrece el gimnasio
 	IdPlanes		SMALLINT NOT NULL IDENTITY(1,1),
 	Nombre 			NVARCHAR(150) NOT NULL UNIQUE,
 	PrecioMensual 	DECIMAL(8,2) NOT NULL DEFAULT 0,
-	DuracionDias 	SMALLINT DEFAULT 0
+	DuracionDias 	SMALLINT DEFAULT 0,
 	PRIMARY KEY (IdPlanes)
 );
 GO
@@ -46,7 +46,7 @@ CREATE TABLE Usuarios (  -- Almacena tanto a los clientes como al staff (entrena
 	PesoCorporalKG 		DECIMAL(5,2) NOT NULL DEFAULT 0,
 	IdRol 				TINYINT NOT NULL,
 	FechaIngreso 		DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	Activo				BIT NOT NULL DEFAULT 1
+	Activo				BIT NOT NULL DEFAULT 1,
 	PRIMARY KEY (IdUsuarios),
 	FOREIGN KEY(IdRol) REFERENCES Roles(IdRoles)
 );
@@ -58,7 +58,7 @@ CREATE TABLE Suscripciones (  -- Tabla puente (con datos extra) que relaciona a 
 	IdPlan 				SMALLINT NOT NULL,
 	IdEstado 			TINYINT NOT NULL,
 	FechaInicio			DATE NOT NULL,
-	FechaVencimiento 	DATE NOT NULL
+	FechaVencimiento 	DATE NOT NULL,
 	PRIMARY KEY (IdSuscripciones),
 	FOREIGN KEY(IdEstado) REFERENCES SuscripcionesEstados(IdSuscripcionesEstados),
 	FOREIGN KEY(IdPlan) REFERENCES Planes(IdPlanes),
@@ -71,7 +71,7 @@ CREATE TABLE Ejercicios (  -- Un catalogo estandarizado de movimientos
 	IdEjercicios	INTEGER NOT NULL IDENTITY(1,1),
 	Nombre 			NVARCHAR(200) NOT NULL,
 	IdGrupoMuscular	TINYINT,
-	LinkExplicacion	NVARCHAR(255)  -- Link a la pagina que explica como realizar el ejercicio
+	LinkExplicacion	NVARCHAR(255),  -- Link a la pagina que explica como realizar el ejercicio
 	PRIMARY KEY (IdEjercicios),
 	FOREIGN KEY(IdGrupoMuscular) REFERENCES GruposMusculares(IdGruposMusculares),
 	CONSTRAINT CK_Ejercicios_LinkExplicacion
@@ -85,7 +85,7 @@ CREATE TABLE Rutinas (  -- Plantillas de entrenamiento que un entrenador puede a
 	IdUsuario 		INTEGER, --<-- Si este atributo es NULL, es una rutina general que puede elegir cualquier cliente/entrenador.
 	FechaCreacion 	DATETIME NOT NULL,
 	Dia				VARCHAR(15), --<-- Si este atributo es NULL, es rutina libre (lo puede realizar cualquier dia de la semana).
-	Activo			BIT NOT NULL DEFAULT 1
+	Activo			BIT NOT NULL DEFAULT 1,
 	PRIMARY KEY (IdRutinas),
 	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(IdUsuarios)
 );
@@ -98,7 +98,7 @@ CREATE TABLE RutinaEjercicios (  -- Asigna los ejercicios específicos a una pla
 	ObjetivoKG				DECIMAL(6, 2) DEFAULT 1,
 	ObjetivoSeries 			SMALLINT DEFAULT 1,
 	ObjetivoRepeticiones 	SMALLINT DEFAULT 1,
-	OrdenEjercicio 			TINYINT DEFAULT 1 --<-- Si debe ser el primer ejercicio de la rutina del dia, el ultimo, etc.
+	OrdenEjercicio 			TINYINT DEFAULT 1, --<-- Si debe ser el primer ejercicio de la rutina del dia, el ultimo, etc.
 	PRIMARY KEY (IdRutinasEjercicios),
 	FOREIGN KEY(IdEjercicio) REFERENCES Ejercicios(IdEjercicios),
 	FOREIGN KEY(IdRutina) REFERENCES Rutinas(IdRutinas)
@@ -110,11 +110,11 @@ CREATE TABLE SesionesEntrenamiento (  -- Registra el momento exacto en que un us
 	IdUsuario 					INTEGER NOT NULL,
 	IdRutina 					INTEGER,
 	FechaHoraInicio 			DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	FechaHoraFin 				DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+	FechaHoraFin 				DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (IdSesionesEntrenamiento),
 	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(IdUsuarios),
 	FOREIGN KEY(IdRutina) REFERENCES Rutinas(IdRutinas),
-	CHECK (FechaHoraFin >= FechaHoraInicio),
+	CHECK (FechaHoraFin >= FechaHoraInicio)
 );
 GO
 
@@ -125,7 +125,7 @@ CREATE TABLE SeriesCompletadas (  -- Guarda cada serie efectiva que hace el usua
 	PesoLevantadoKG 		DECIMAL(6, 2) NOT NULL DEFAULT 0,
 	RepeticionesLogradas 	SMALLINT NOT NULL DEFAULT 0,
 	RIR 					TINYINT,  --<-- Reps In Reserve, o repeticiones de reserva que le quedaban antes de llegar al fallo.
-	EsRecordPersonal 		BIT NOT NULL DEFAULT 0
+	EsRecordPersonal 		BIT NOT NULL DEFAULT 0,
 	PRIMARY KEY (IdSeriesCompletadas),
 	FOREIGN KEY(IdSesion) REFERENCES SesionesEntrenamiento(IdSesionesEntrenamiento),
 	FOREIGN KEY(IdEjercicio) REFERENCES Ejercicios(IdEjercicios)
