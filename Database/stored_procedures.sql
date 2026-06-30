@@ -22,7 +22,7 @@ END;
 GO
 
 -- Crear rutinas personalizada
-CREATE PROCEDURE SP_Rutina_Personaliazda_Usuario
+CREATE PROCEDURE SP_Rutina_Personalizada_Usuario
     @NOMBRE VARCHAR(150),
     @ID_USUARIO BIGINT
 AS
@@ -62,7 +62,7 @@ END;
 GO
 
 -- Modificar rutina personalizada
-CREATE PROCEDURE SP_Modificar_Rutina_Personaliazda_Usuario
+CREATE PROCEDURE SP_Modificar_Rutina_Personalizada_Usuario
     @ID INT,
     @ID_USUARIO BIGINT,
     @NOMBRE VARCHAR(150)
@@ -70,7 +70,7 @@ AS
 BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
-            UPDATE Rutinas SET Nombre = @NOMBRE, IdUsuario = @ID_USUARIO WHERE IdRutinas = @ID;;
+            UPDATE Rutinas SET Nombre = @NOMBRE, IdUsuario = @ID_USUARIO WHERE IdRutinas = @ID;
         COMMIT TRANSACTION;
         PRINT 'OK';
     END TRY
@@ -661,7 +661,7 @@ END;
 GO
 
 
---Sp de auditoria (Probando)
+--Sp de auditoria
 --Sp de auditoria. Registra las modificaciones y las eliminaciones de la tabla Usuarios en la tabla Auditoria_Usuarios. En caso de corresponder tambien registra el cambio de Pass, y registro en Auditoria_Pass
 CREATE PROCEDURE sp_Registrar_Movimiento
   @IdUsuarioModificador INT,
