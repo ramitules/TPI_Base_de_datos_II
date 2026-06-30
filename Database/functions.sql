@@ -1,16 +1,6 @@
 USE GestionGimnasio
 GO
 
-CREATE FUNCTION fn_ejemplo ()
-RETURNS INT
-AS
-BEGIN
-    RETURN 1
-END;
-
-GO
-
--- EN PREPARACION (MIGUE)
 -- Funcion que devuelve los dias restantes para el vencimiento de la suscripcion de un usuario. Si no tiene suscripcion activa, retorna 0.
 
 CREATE FUNCTION fn_DiasRestantesSuscripcion (@IdUsuario INT)
@@ -69,6 +59,7 @@ BEGIN
 END;
 GO
 
+
 CREATE FUNCTION fn_EdadUsuario(@FechaNacimiento DATE)
 RETURNS INT
 AS
@@ -100,7 +91,7 @@ BEGIN
 END
 GO
 
---  Funci�n que devuelve la cantidad de sesiones de entrenamiento registradas por un usuario.
+--  Funcion que devuelve la cantidad de sesiones de entrenamiento registradas por un usuario.
 CREATE FUNCTION fn_CantidadEntrenamientosUsuario
 (
     @IdUsuario INT
@@ -122,7 +113,7 @@ END;
 GO
 
 
---  Funci�n que devuelve la cantidad total de minutos entrenados por un usuario en todas sus sesiones. 
+--  Funcion que devuelve la cantidad total de minutos entrenados por un usuario en todas sus sesiones. 
 CREATE FUNCTION fn_MinutosEntrenadosUsuario
 (
     @IdUsuario INT
