@@ -1,35 +1,6 @@
 USE GestionGimnasio
 GO
 
--- Trigger para detectar y actualizar el record personal luego de insertar una serie.
--- Regla de negocio: Para el record personal se mide el peso levantado, en caso de empate se chequea las repeticiones.
-
-CREATE TRIGGER dbo.tr_DetectarRecordPersonal 
-ON SeriesCompletadas
-AFTER INSERT 
-AS
-BEGIN
-    UPDATE SC 
-    SET SC.EsRecordPersonal = CASE 
-        WHEN SC.IdSeriesCompletadas IN (
-            SELECT TOP 1 WITH TIES SCR.IdSeriesCompletadas
-            FROM SeriesCompletadas AS SCR -- Series Completatas Ranking
-            INNER JOIN SesionesEntrenamiento AS SER ON SCR.IdSesion = SER.IdSesionesEntrenamiento
-                WHERE SER.IdUsuario = SE.IdUsuario AND SCR.IdEjercicio = SC.IdEjercicio
-                ORDER BY SCR.PesoLevantadoKG DESC, SCR.RepeticionesLogradas DESC
-        ) THEN 1
-        ELSE 0
-    END
-    FROM SeriesCompletadas AS SC
-    INNER JOIN SesionesEntrenamiento AS SE ON SC.IdSesion = SE.IdSesionesEntrenamiento
-    INNER JOIN (
-        SELECT DISTINCT IdEjercicio, IdSesion 
-        FROM inserted
-    ) AS I ON SC.IdEjercicio = I.IdEjercicio
-    INNER JOIN SesionesEntrenamiento AS SEI ON I.IdSesion = SEI.IdSesionesEntrenamiento
-    WHERE SE.IdUsuario = SEI.IdUsuario;
-END;
-GO
 
 -- Trigger para validar que los socios esten activos antes de iniciar una sesion de entrenamiento.
 -- Regla de negocio: Si el socio no tiene suscripcion activa no puede uniciar una sesion de entrenamiento.
@@ -49,7 +20,8 @@ BEGIN
 
         IF (@cantidadInvalidos > 0)
         BEGIN
-            RAISERROR('Uno o más socios no poseen suscripción activa para iniciar una sesion de entrenamiento: tr_ValidarSesionConSuscripcionActiva ', 16, 1);
+            RAISERROR('Uno o más socios no poseen suscripción activa para iniciar 
+            una sesion de entrenamiento: tr_ValidarSesionConSuscripcionActiva ', 16, 1);
             ROLLBACK TRANSACTION;
             RETURN;
         END
@@ -61,7 +33,8 @@ BEGIN
     END TRY
     BEGIN CATCH
         ROLLBACK TRANSACTION; 
-        RAISERROR('Error al procesar el alta de la sesión de entrenamiento: tr_ValidarSesionConSuscripcionActiva .', 16, 1);
+        RAISERROR('Error al procesar el alta de la sesión de entrenamiento: 
+        tr_ValidarSesionConSuscripcionActiva .', 16, 1);
     END CATCH
 END;
 GO
@@ -85,19 +58,22 @@ BEGIN
 
         IF (@cantidadInvalidos > 0)
         BEGIN
-            RAISERROR('Uno o más usuarios en el lote no poseen el Rol de Cliente para realizar una Suscripcion.', 16, 1);
+            RAISERROR('Uno o más usuarios en el lote no poseen el 
+            Rol de Cliente para realizar una Suscripcion.', 16, 1);
             ROLLBACK TRANSACTION;
             RETURN;
         END
 
-        INSERT INTO Suscripciones (IdUsuario, IdPlan, IdEstado, FechaInicio, FechaVencimiento)
+        INSERT INTO Suscripciones (IdUsuario, IdPlan, IdEstado, 
+        FechaInicio, FechaVencimiento)
         SELECT I.IdUsuario, I.IdPlan, I.IdEstado, I.FechaInicio, I.FechaVencimiento 
         FROM inserted AS I;
 
     END TRY
     BEGIN CATCH
         ROLLBACK TRANSACTION; 
-        RAISERROR('Error al procesar las altas de la suscripción: dbo.tr_SoloClientesSuscripcion .', 16, 1);
+        RAISERROR('Error al procesar las altas de la suscripción: 
+        dbo.tr_SoloClientesSuscripcion .', 16, 1);
     END CATCH 
 END;
 GO
@@ -121,12 +97,14 @@ BEGIN
         IF @@ROWCOUNT = 0
         BEGIN
             -- Error solo informativo (Severidad 10 no rompe las modificaciones)
-            RAISERROR('Aviso: Los usuarios seleccionados ya se encontraban desactivados.', 10, 1);
+            RAISERROR('Aviso: Todos los usuarios seleccionados ya se encontraban 
+            desactivados.', 10, 1);
         END
     END TRY
     BEGIN CATCH
         ROLLBACK TRANSACTION; 
-        RAISERROR('Error al procesar la desactivación lógica en Usuarios: dbo.tr_DesactivacionLogicaUsuarios 
+        RAISERROR('Error al procesar la desactivación lógica en Usuarios: 
+        dbo.tr_DesactivacionLogicaUsuarios 
         ON Usuarios.', 16, 1);
     END CATCH
 END;
@@ -145,26 +123,30 @@ BEGIN
         UPDATE S
         SET S.IdEstado = 3 
         FROM Suscripciones AS S
-        WHERE S.IdSuscripciones IN (SELECT D.IdSuscripciones FROM deleted AS D) 
-          AND S.IdEstado <> 3;
+        WHERE S.IdSuscripciones IN (SELECT D.IdSuscripciones 
+        FROM deleted AS D) 
+        AND S.IdEstado <> 3;
 
         IF @@ROWCOUNT = 0
         BEGIN
             -- Error solo informativo (Severidad 10 no rompe las modificaciones)
-            RAISERROR('Aviso: Las suscripciones seleccionadas ya estaban desactivadas.', 10, 1);
+            RAISERROR('Aviso: Las suscripciones seleccionadas 
+            ya estaban desactivadas.', 10, 1);
         END
     END TRY
     BEGIN CATCH
         ROLLBACK TRANSACTION; 
-        RAISERROR('Error al procesar la desactivación lógica: dbo.tr_DesactivacionLogicaSuscripciones 
+        RAISERROR('Error al procesar la desactivación lógica: 
+        dbo.tr_DesactivacionLogicaSuscripciones 
         ON Suscripciones INSTEAD OF DELETE', 16, 1);
     END CATCH
 END;
 GO
 
 
---Trigger de auditoria(Probando)--
+--Trigger de auditoria
 --Este solo insertaria registro en la tabla Auditoria_Usuarios solo cuando los cambios se hagan desde el gestor (desde la app se registraria un un sp)
+
 CREATE TRIGGER tr_Registrar_Movimiento_en_Tabla_Usuarios ON USUARIOS
 AFTER UPDATE, DELETE
 AS
@@ -187,6 +169,7 @@ END;
 GO
 
 --Este solo insertaria registro en la tabla Auditoria_Pass solo cuando los cambios se hagan desde el gestor (desde la app se registraria un un sp). Si falla deberia registrar en Auditoria_Errores el error
+
 CREATE TRIGGER tr_Registrar_Movimiento_en_Tabla_AccesoUsuarios ON AccesoUsuarios
 AFTER UPDATE
 AS
@@ -215,6 +198,7 @@ GO
 -- Actualizar el registro que se acaba de insertar en la tabla SeriesCompletadas 
 -- en caso de detectar que la cantidad de kilogramos que el usuario pudo levantar
 -- es superior al máximo que se ha levantado en el pasado en el mismo ejercicio.
+
 CREATE TRIGGER TR_SeriesCompletadas_Record
 ON SeriesCompletadas
 AFTER INSERT
