@@ -63,7 +63,7 @@ CREATE TABLE Suscripciones (  -- Tabla puente (con datos extra) que relaciona a 
 	FOREIGN KEY(IdEstado) REFERENCES SuscripcionesEstados(IdSuscripcionesEstados),
 	FOREIGN KEY(IdPlan) REFERENCES Planes(IdPlanes),
 	FOREIGN KEY(IdUsuario) REFERENCES Usuarios(IdUsuarios),
-	CHECK (FechaVencimiento > FechaInicio),
+	CHECK (FechaVencimiento > FechaInicio)
 );
 GO
 
@@ -139,7 +139,7 @@ CREATE TABLE AccesoUsuarios (  -- Guarda el codigo de usuario y su contraseña p
 );
 GO
 
---Tablas de auditoria (Probando)
+--Tablas de auditoria
 --Modificacion y/o eliminacion de usuarios
 CREATE TABLE Auditoria_Usuarios(
   IdAuditoria INT IDENTITY(1,1),
